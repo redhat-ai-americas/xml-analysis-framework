@@ -6,5 +6,5 @@ Features specialized handlers for different document types and generates structu
 AI-ready data and optimized chunks.
 """
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __author__ = "AI Building Blocks"

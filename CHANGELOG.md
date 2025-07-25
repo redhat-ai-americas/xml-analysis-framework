@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2025-01-25
+
+### Changed
+- **Repository Information**: Updated all GitHub links to point to official Red Hat AI Americas repository
+  - Changed from: `https://github.com/wjackson/xml-analysis-framework`
+  - Changed to: `https://github.com/redhat-ai-americas/xml-analysis-framework`
+  - Updated in setup.py, pyproject.toml, README.md, and CONTRIBUTING.md
+- **Contact Information**: Updated author email to `wjackson@redhat.com`
+
+### Fixed
+- **Smart Chunking Example**: Updated README.md smart chunking example to include required analysis format conversion
+
 ## [1.1.0] - 2025-01-25
 
 ### Fixed

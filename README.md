@@ -31,14 +31,27 @@ analysis = analyzer.analyze_document("path/to/file.xml")
 
 ### Smart Chunking
 ```python
+from core.analyzer import XMLDocumentAnalyzer
 from core.chunking import ChunkingOrchestrator
 
-orchestrator = ChunkingOrchestrator()
+# First get analysis
+analyzer = XMLDocumentAnalyzer()
+analysis = analyzer.analyze_document("path/to/file.xml")
 
+# Convert analysis format for chunking
+chunking_analysis = {
+    'document_type': {
+        'type_name': analysis['document_type'].type_name,
+        'confidence': analysis['document_type'].confidence
+    },
+    'analysis': analysis['analysis']
+}
+
+orchestrator = ChunkingOrchestrator()
 # Automatic strategy selection with analysis context
 chunks = orchestrator.chunk_document(
     file_path="path/to/file.xml",
-    specialized_analysis=analysis,  # Pass the full analysis result
+    specialized_analysis=chunking_analysis,
     strategy='auto'  # or 'hierarchical', 'sliding_window', 'content_aware'
 )
 ```
@@ -164,7 +177,7 @@ xml-analysis-framework/
 
 ```bash
 # Install from source
-git clone <repository-url>
+git clone https://github.com/redhat-ai-americas/xml-analysis-framework.git
 cd xml-analysis-framework
 pip install -e .
 

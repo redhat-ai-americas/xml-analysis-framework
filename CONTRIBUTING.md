@@ -18,7 +18,7 @@ The XML Analysis Framework is designed to be a comprehensive, production-ready s
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/wjackson/xml-analysis-framework.git
+   git clone https://github.com/redhat-ai-americas/xml-analysis-framework.git
    cd xml-analysis-framework
    ```
 
