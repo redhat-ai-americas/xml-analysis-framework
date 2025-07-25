@@ -7,11 +7,18 @@ While JSON is more common, XML representations exist and are used
 in some enterprise environments.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -22,7 +29,7 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class OpenAPIXMLHandler(XMLHandler):
     """Handler for OpenAPI/Swagger specifications in XML format"""
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
         # Check for OpenAPI root elements
@@ -46,7 +53,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Determine version
         version = "3.0.0"  # Default to OpenAPI 3.0
         
@@ -76,7 +83,7 @@ class OpenAPIXMLHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         # Determine version for proper parsing
         version = self._determine_version(root)
         is_openapi3 = version.startswith('3')
@@ -127,7 +134,7 @@ class OpenAPIXMLHandler(XMLHandler):
             quality_metrics=self._assess_api_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         version = self._determine_version(root)
         is_openapi3 = version.startswith('3')
         
@@ -139,7 +146,7 @@ class OpenAPIXMLHandler(XMLHandler):
             'authentication': self._extract_auth_methods(root)
         }
     
-    def _determine_version(self, root: ET.Element) -> str:
+    def _determine_version(self, root: Element) -> str:
         """Determine OpenAPI/Swagger version"""
         # Check for version in various places
         if root.get('version'):
@@ -161,7 +168,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return "3.0.0"
     
-    def _extract_api_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_api_info(self, root: Element) -> Dict[str, Any]:
         """Extract API information"""
         info = root.find('.//info')
         if info is None:
@@ -193,7 +200,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return api_info
     
-    def _extract_servers(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_servers(self, root: Element) -> List[Dict[str, Any]]:
         """Extract server information (OpenAPI 3.x)"""
         servers = []
         
@@ -219,7 +226,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return servers
     
-    def _extract_host_info(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_host_info(self, root: Element) -> List[Dict[str, Any]]:
         """Extract host information (Swagger 2.0)"""
         host = self._get_child_text(root, 'host')
         base_path = self._get_child_text(root, 'basePath', '/')
@@ -243,7 +250,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return servers
     
-    def _analyze_paths(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_paths(self, root: Element) -> List[Dict[str, Any]]:
         """Analyze API paths"""
         paths_elem = root.find('.//paths')
         if paths_elem is None:
@@ -287,7 +294,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return paths
     
-    def _analyze_operations(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_operations(self, root: Element) -> Dict[str, Any]:
         """Analyze all operations"""
         operations = {
             'total': 0,
@@ -331,7 +338,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return operations
     
-    def _analyze_schemas(self, root: ET.Element, is_openapi3: bool) -> List[Dict[str, Any]]:
+    def _analyze_schemas(self, root: Element, is_openapi3: bool) -> List[Dict[str, Any]]:
         """Analyze data schemas"""
         schemas = []
         
@@ -356,7 +363,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return schemas
     
-    def _extract_schema_info(self, name: str, schema_elem: ET.Element) -> Dict[str, Any]:
+    def _extract_schema_info(self, name: str, schema_elem: Element) -> Dict[str, Any]:
         """Extract schema information"""
         schema_info = {
             'name': name,
@@ -392,7 +399,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return schema_info
     
-    def _analyze_security(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_security(self, root: Element) -> Dict[str, Any]:
         """Analyze security definitions"""
         security = {
             'schemes': [],
@@ -443,7 +450,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return security
     
-    def _extract_oauth_flows(self, scheme_elem: ET.Element) -> Dict[str, Any]:
+    def _extract_oauth_flows(self, scheme_elem: Element) -> Dict[str, Any]:
         """Extract OAuth flows (OpenAPI 3.x)"""
         flows = {}
         flows_elem = scheme_elem.find('.//flows')
@@ -461,7 +468,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return flows
     
-    def _extract_scopes(self, parent_elem: ET.Element) -> Dict[str, str]:
+    def _extract_scopes(self, parent_elem: Element) -> Dict[str, str]:
         """Extract OAuth scopes"""
         scopes = {}
         scopes_elem = parent_elem.find('.//scopes')
@@ -473,7 +480,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return scopes
     
-    def _extract_tags(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_tags(self, root: Element) -> List[Dict[str, str]]:
         """Extract tag definitions"""
         tags = []
         
@@ -495,7 +502,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return tags
     
-    def _extract_external_docs(self, root: ET.Element) -> Optional[Dict[str, str]]:
+    def _extract_external_docs(self, root: Element) -> Optional[Dict[str, str]]:
         """Extract external documentation"""
         ext_docs = root.find('.//externalDocs')
         if ext_docs is not None:
@@ -505,7 +512,7 @@ class OpenAPIXMLHandler(XMLHandler):
             }
         return None
     
-    def _extract_all_endpoints(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_all_endpoints(self, root: Element) -> List[Dict[str, Any]]:
         """Extract all API endpoints"""
         endpoints = []
         paths_elem = root.find('.//paths')
@@ -534,7 +541,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return endpoints
     
-    def _extract_request_schemas(self, root: ET.Element, is_openapi3: bool) -> List[Dict[str, Any]]:
+    def _extract_request_schemas(self, root: Element, is_openapi3: bool) -> List[Dict[str, Any]]:
         """Extract request body schemas"""
         request_schemas = []
         paths_elem = root.find('.//paths')
@@ -582,7 +589,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return request_schemas[:20]  # Limit
     
-    def _extract_response_schemas(self, root: ET.Element, is_openapi3: bool) -> List[Dict[str, Any]]:
+    def _extract_response_schemas(self, root: Element, is_openapi3: bool) -> List[Dict[str, Any]]:
         """Extract response schemas"""
         response_schemas = []
         paths_elem = root.find('.//paths')
@@ -631,7 +638,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return response_schemas[:20]  # Limit
     
-    def _extract_auth_methods(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_auth_methods(self, root: Element) -> List[Dict[str, str]]:
         """Extract authentication methods"""
         auth_methods = []
         
@@ -646,7 +653,7 @@ class OpenAPIXMLHandler(XMLHandler):
         
         return auth_methods
     
-    def _get_child_text(self, parent: ET.Element, child_name: str, default: str = None) -> Optional[str]:
+    def _get_child_text(self, parent: Element, child_name: str, default: str = None) -> Optional[str]:
         """Get text content of a child element"""
         child = parent.find(f'.//{child_name}')
         return child.text if child is not None else default

@@ -9,10 +9,17 @@ These interfaces establish a consistent pattern across all frameworks while
 allowing each to evolve independently without external dependencies.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 
 @dataclass
@@ -42,7 +49,7 @@ class FileHandler(ABC):
     Abstract base class for file document handlers
     
     This interface can be adapted by other frameworks:
-    - XMLHandler: Uses ET.Element for XML-specific processing
+    - XMLHandler: Uses Element for XML-specific processing
     - DocumentHandler: Uses file_path for office documents  
     - DataHandler: Uses file_path for structured data
     - MediaHandler: Uses file_path for media files
@@ -56,7 +63,7 @@ class FileHandler(ABC):
         Args:
             file_path: Path to the file to analyze
             **kwargs: Framework-specific additional parameters
-                     (e.g., root: ET.Element for XML, mime_type for others)
+                     (e.g., root: Element for XML, mime_type for others)
         
         Returns:
             (can_handle: bool, confidence: float)
@@ -117,7 +124,7 @@ class XMLHandler(FileHandler):
     - MediaHandler(FileHandler) for media files
     """
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         """
         Check if this handler can process the XML document
         
@@ -130,7 +137,7 @@ class XMLHandler(FileHandler):
         """
         pass
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         """
         Detect and classify the XML document type
         
@@ -143,7 +150,7 @@ class XMLHandler(FileHandler):
         """
         pass
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         """
         Perform specialized analysis of the XML document
         
@@ -156,7 +163,7 @@ class XMLHandler(FileHandler):
         """
         pass
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         """
         Extract key structured data from the XML document
         

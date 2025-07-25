@@ -6,11 +6,18 @@ Analyzes Apache Log4j XML configuration files for log level optimization,
 security configuration analysis, performance assessment, and compliance checking.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -21,7 +28,7 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class Log4jConfigHandler(XMLHandler):
     """Handler for Log4j XML configuration files"""
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Log4j 1.x uses 'log4j:configuration'
         if root.tag == 'log4j:configuration' or root.tag.endswith('}configuration'):
             if 'log4j' in root.tag:
@@ -38,7 +45,7 @@ class Log4jConfigHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         version = "2.x" if root.tag == 'Configuration' else "1.x"
         
         # Extract more detailed version information
@@ -60,7 +67,7 @@ class Log4jConfigHandler(XMLHandler):
             metadata=metadata
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         is_v2 = root.tag == 'Configuration'
         
         findings = {
@@ -120,7 +127,7 @@ class Log4jConfigHandler(XMLHandler):
             quality_metrics=self._assess_logging_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         is_v2 = root.tag == 'Configuration'
         
         return {
@@ -134,7 +141,7 @@ class Log4jConfigHandler(XMLHandler):
             'security_summary': self._extract_security_summary(root)
         }
     
-    def _detect_detailed_version(self, root: ET.Element, namespaces: Dict[str, str]) -> Optional[str]:
+    def _detect_detailed_version(self, root: Element, namespaces: Dict[str, str]) -> Optional[str]:
         """Attempt to detect more detailed Log4j version"""
         # Check for version in attributes or comments
         if root.tag == 'Configuration':
@@ -148,21 +155,21 @@ class Log4jConfigHandler(XMLHandler):
         else:
             return "1.x"
     
-    def _count_appenders(self, root: ET.Element) -> int:
+    def _count_appenders(self, root: Element) -> int:
         """Count number of appenders"""
         if root.tag == 'Configuration':
             return len(root.findall('.//Appenders/*'))
         else:
             return len(root.findall('.//appender'))
     
-    def _count_loggers(self, root: ET.Element) -> int:
+    def _count_loggers(self, root: Element) -> int:
         """Count number of loggers"""
         if root.tag == 'Configuration':
             return len(root.findall('.//Loggers/*'))
         else:
             return len(root.findall('.//logger')) + len(root.findall('.//root'))
     
-    def _analyze_appenders(self, root: ET.Element, is_v2: bool) -> Dict[str, Any]:
+    def _analyze_appenders(self, root: Element, is_v2: bool) -> Dict[str, Any]:
         """Analyze appender configurations"""
         appender_info = {
             'appender_count': 0,
@@ -228,7 +235,7 @@ class Log4jConfigHandler(XMLHandler):
         
         return appender_info
     
-    def _analyze_loggers(self, root: ET.Element, is_v2: bool) -> Dict[str, Any]:
+    def _analyze_loggers(self, root: Element, is_v2: bool) -> Dict[str, Any]:
         """Analyze logger configurations"""
         logger_info = {
             'logger_count': 0,
@@ -315,7 +322,7 @@ class Log4jConfigHandler(XMLHandler):
         
         return logger_info
     
-    def _extract_log_levels(self, root: ET.Element, is_v2: bool) -> Dict[str, Any]:
+    def _extract_log_levels(self, root: Element, is_v2: bool) -> Dict[str, Any]:
         """Extract and analyze log levels"""
         level_info = {
             'level_counts': {},
@@ -367,7 +374,7 @@ class Log4jConfigHandler(XMLHandler):
         
         return level_info
     
-    def _analyze_patterns(self, root: ET.Element, is_v2: bool) -> Dict[str, Any]:
+    def _analyze_patterns(self, root: Element, is_v2: bool) -> Dict[str, Any]:
         """Analyze log patterns for security and performance"""
         pattern_info = {
             'pattern_count': 0,
@@ -413,7 +420,7 @@ class Log4jConfigHandler(XMLHandler):
         
         return pattern_info
     
-    def _analyze_filters(self, root: ET.Element, is_v2: bool) -> Dict[str, Any]:
+    def _analyze_filters(self, root: Element, is_v2: bool) -> Dict[str, Any]:
         """Analyze filter configurations"""
         filter_info = {
             'filter_count': 0,
@@ -451,7 +458,7 @@ class Log4jConfigHandler(XMLHandler):
         
         return filter_info
     
-    def _check_security_issues(self, root: ET.Element) -> Dict[str, Any]:
+    def _check_security_issues(self, root: Element) -> Dict[str, Any]:
         """Check for security issues including Log4Shell"""
         security_info = {
             'security_risks': [],
@@ -514,7 +521,7 @@ class Log4jConfigHandler(XMLHandler):
         
         return security_info
     
-    def _analyze_performance_settings(self, root: ET.Element, is_v2: bool) -> Dict[str, Any]:
+    def _analyze_performance_settings(self, root: Element, is_v2: bool) -> Dict[str, Any]:
         """Analyze performance-related settings"""
         perf_info = {
             'async_appenders': 0,
@@ -546,7 +553,7 @@ class Log4jConfigHandler(XMLHandler):
         
         return perf_info
     
-    def _extract_global_settings(self, root: ET.Element, is_v2: bool) -> Dict[str, Any]:
+    def _extract_global_settings(self, root: Element, is_v2: bool) -> Dict[str, Any]:
         """Extract global configuration settings"""
         settings = {}
         
@@ -561,7 +568,7 @@ class Log4jConfigHandler(XMLHandler):
         
         return settings
     
-    def _extract_v2_target(self, appender: ET.Element) -> Optional[str]:
+    def _extract_v2_target(self, appender: Element) -> Optional[str]:
         """Extract target for Log4j 2.x appenders"""
         if appender.tag == 'File':
             return appender.get('fileName')
@@ -575,7 +582,7 @@ class Log4jConfigHandler(XMLHandler):
             return f"{host}:{port}" if host and port else None
         return None
     
-    def _extract_v1_target(self, appender: ET.Element) -> Optional[str]:
+    def _extract_v1_target(self, appender: Element) -> Optional[str]:
         """Extract target for Log4j 1.x appenders"""
         for param in appender.findall('.//param'):
             param_name = param.get('name')
@@ -601,7 +608,7 @@ class Log4jConfigHandler(XMLHandler):
             return 'Async'
         return 'Other'
     
-    def _extract_pattern(self, appender: ET.Element) -> Optional[str]:
+    def _extract_pattern(self, appender: Element) -> Optional[str]:
         """Extract pattern from appender layout"""
         # Log4j 2.x
         pattern_layout = appender.find('.//PatternLayout')
@@ -617,7 +624,7 @@ class Log4jConfigHandler(XMLHandler):
         
         return None
     
-    def _extract_appender_summary(self, root: ET.Element, is_v2: bool) -> Dict[str, Any]:
+    def _extract_appender_summary(self, root: Element, is_v2: bool) -> Dict[str, Any]:
         """Extract appender summary information"""
         appender_analysis = self._analyze_appenders(root, is_v2)
         return {
@@ -628,7 +635,7 @@ class Log4jConfigHandler(XMLHandler):
             'external_appenders': len(appender_analysis['external_appenders'])
         }
     
-    def _extract_logger_summary(self, root: ET.Element, is_v2: bool) -> Dict[str, Any]:
+    def _extract_logger_summary(self, root: Element, is_v2: bool) -> Dict[str, Any]:
         """Extract logger summary information"""
         logger_analysis = self._analyze_loggers(root, is_v2)
         return {
@@ -638,7 +645,7 @@ class Log4jConfigHandler(XMLHandler):
             'level_distribution': logger_analysis['level_distribution']
         }
     
-    def _extract_security_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_security_summary(self, root: Element) -> Dict[str, Any]:
         """Extract security summary information"""
         security_analysis = self._check_security_issues(root)
         return {

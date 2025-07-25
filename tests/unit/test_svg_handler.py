@@ -6,7 +6,7 @@ Tests the SVG handler against synthetic test files.
 
 import sys
 import os
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from pathlib import Path
 
 # Add the src directory to the path

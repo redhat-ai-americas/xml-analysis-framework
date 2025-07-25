@@ -6,11 +6,18 @@ Analyzes Hibernate ORM configuration files and mapping files for database schema
 ORM optimization, security assessment, and migration planning.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -25,7 +32,7 @@ class HibernateHandler(XMLHandler):
     HIBERNATE_CONFIG_DTD = "hibernate-configuration"
     HIBERNATE_MAPPING_DTD = "hibernate-mapping"
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for Hibernate root elements
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
@@ -65,7 +72,7 @@ class HibernateHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
         # Determine file type
@@ -99,7 +106,7 @@ class HibernateHandler(XMLHandler):
             metadata=metadata
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
         if root_tag == 'hibernate-configuration':
@@ -157,7 +164,7 @@ class HibernateHandler(XMLHandler):
             quality_metrics=self._assess_hibernate_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'hibernate_metadata': {
                 'version': self._detect_hibernate_version(root),
@@ -169,7 +176,7 @@ class HibernateHandler(XMLHandler):
             'configuration_summary': self._extract_configuration_summary(root)
         }
     
-    def _analyze_configuration(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_configuration(self, root: Element) -> Dict[str, Any]:
         """Analyze Hibernate configuration file"""
         findings = {
             'hibernate_info': {
@@ -185,7 +192,7 @@ class HibernateHandler(XMLHandler):
         }
         return findings
     
-    def _analyze_mapping(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_mapping(self, root: Element) -> Dict[str, Any]:
         """Analyze Hibernate mapping file"""
         findings = {
             'hibernate_info': {
@@ -204,7 +211,7 @@ class HibernateHandler(XMLHandler):
         }
         return findings
     
-    def _analyze_session_factory(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_session_factory(self, root: Element) -> Dict[str, Any]:
         """Analyze session-factory configuration"""
         session_factory_info = {
             'present': False,
@@ -237,7 +244,7 @@ class HibernateHandler(XMLHandler):
         
         return session_factory_info
     
-    def _extract_database_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_database_info(self, root: Element) -> Dict[str, Any]:
         """Extract database connection information"""
         db_info = {
             'driver': None,
@@ -275,7 +282,7 @@ class HibernateHandler(XMLHandler):
         
         return db_info
     
-    def _analyze_configuration_properties(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_configuration_properties(self, root: Element) -> Dict[str, Any]:
         """Analyze configuration properties"""
         props_info = {
             'property_count': 0,
@@ -308,7 +315,7 @@ class HibernateHandler(XMLHandler):
         
         return props_info
     
-    def _analyze_mapping_resources(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_mapping_resources(self, root: Element) -> Dict[str, Any]:
         """Analyze mapping resource declarations"""
         mapping_info = {
             'mapping_count': 0,
@@ -342,7 +349,7 @@ class HibernateHandler(XMLHandler):
         
         return mapping_info
     
-    def _analyze_entities(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_entities(self, root: Element) -> Dict[str, Any]:
         """Analyze entity/class mappings"""
         entity_info = {
             'entity_count': 0,
@@ -378,7 +385,7 @@ class HibernateHandler(XMLHandler):
         
         return entity_info
     
-    def _analyze_relationships(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_relationships(self, root: Element) -> Dict[str, Any]:
         """Analyze entity relationships"""
         rel_info = {
             'relationship_count': 0,
@@ -414,7 +421,7 @@ class HibernateHandler(XMLHandler):
         
         return rel_info
     
-    def _analyze_identifiers(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_identifiers(self, root: Element) -> Dict[str, Any]:
         """Analyze entity identifiers"""
         id_info = {
             'id_strategies': [],
@@ -445,7 +452,7 @@ class HibernateHandler(XMLHandler):
         
         return id_info
     
-    def _analyze_entity_properties(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_entity_properties(self, root: Element) -> Dict[str, Any]:
         """Analyze entity properties"""
         prop_info = {
             'property_count': 0,
@@ -485,7 +492,7 @@ class HibernateHandler(XMLHandler):
         
         return prop_info
     
-    def _analyze_collections(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_collections(self, root: Element) -> Dict[str, Any]:
         """Analyze collection mappings"""
         collection_info = {
             'collection_count': 0,
@@ -521,7 +528,7 @@ class HibernateHandler(XMLHandler):
         
         return collection_info
     
-    def _analyze_inheritance(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_inheritance(self, root: Element) -> Dict[str, Any]:
         """Analyze inheritance mappings"""
         inheritance_info = {
             'has_inheritance': False,
@@ -547,7 +554,7 @@ class HibernateHandler(XMLHandler):
         
         return inheritance_info
     
-    def _analyze_sql_queries(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_sql_queries(self, root: Element) -> Dict[str, Any]:
         """Analyze SQL queries and HQL"""
         query_info = {
             'sql_query_count': 0,
@@ -583,7 +590,7 @@ class HibernateHandler(XMLHandler):
         
         return query_info
     
-    def _analyze_configuration_security(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_configuration_security(self, root: Element) -> Dict[str, Any]:
         """Analyze security aspects of configuration"""
         security_info = {
             'security_risks': [],
@@ -619,7 +626,7 @@ class HibernateHandler(XMLHandler):
         
         return security_info
     
-    def _analyze_mapping_security(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_mapping_security(self, root: Element) -> Dict[str, Any]:
         """Analyze security aspects of mapping"""
         security_info = {
             'security_risks': [],
@@ -645,7 +652,7 @@ class HibernateHandler(XMLHandler):
         
         return security_info
     
-    def _analyze_performance_settings(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_performance_settings(self, root: Element) -> Dict[str, Any]:
         """Analyze performance-related settings"""
         perf_info = {
             'batch_size': None,
@@ -687,12 +694,12 @@ class HibernateHandler(XMLHandler):
         else:
             return 'other'
     
-    def _detect_hibernate_version(self, root: ET.Element) -> str:
+    def _detect_hibernate_version(self, root: Element) -> str:
         """Detect Hibernate version from DTD or other indicators"""
         # This is a simplified version - in practice, you'd check DOCTYPE
         return "5.x"  # Default assumption
     
-    def _determine_file_type(self, root: ET.Element) -> str:
+    def _determine_file_type(self, root: Element) -> str:
         """Determine if this is a configuration or mapping file"""
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
@@ -703,7 +710,7 @@ class HibernateHandler(XMLHandler):
         else:
             return 'Configuration'  # Default
     
-    def _count_entities(self, root: ET.Element) -> int:
+    def _count_entities(self, root: Element) -> int:
         """Count number of entities in the file"""
         entity_elements = ['class', 'subclass', 'joined-subclass', 'union-subclass']
         count = 0
@@ -715,7 +722,7 @@ class HibernateHandler(XMLHandler):
         
         return count
     
-    def _extract_database_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_database_summary(self, root: Element) -> Dict[str, Any]:
         """Extract database connection summary"""
         db_info = self._extract_database_info(root)
         return {
@@ -725,7 +732,7 @@ class HibernateHandler(XMLHandler):
             'show_sql': db_info.get('show_sql', False)
         }
     
-    def _extract_entity_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_entity_summary(self, root: Element) -> Dict[str, Any]:
         """Extract entity summary information"""
         entities = self._analyze_entities(root)
         return {
@@ -734,7 +741,7 @@ class HibernateHandler(XMLHandler):
             'has_inheritance': len(entities['inheritance_strategies']) > 0
         }
     
-    def _extract_configuration_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_configuration_summary(self, root: Element) -> Dict[str, Any]:
         """Extract configuration summary"""
         if self._find_element_by_local_name(root, 'session-factory') is not None:
             session_factory = self._analyze_session_factory(root)
@@ -773,7 +780,7 @@ class HibernateHandler(XMLHandler):
         else:
             return 'Unknown'
     
-    def _analyze_hibernate_elements(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_hibernate_elements(self, root: Element) -> Dict[str, Any]:
         """Generic analysis of Hibernate elements"""
         return {
             'file_type': self._determine_file_type(root),
@@ -781,7 +788,7 @@ class HibernateHandler(XMLHandler):
             'element_count': len(list(root.iter()))
         }
     
-    def _analyze_security(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_security(self, root: Element) -> Dict[str, Any]:
         """Generic security analysis"""
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
@@ -790,7 +797,7 @@ class HibernateHandler(XMLHandler):
         else:
             return self._analyze_mapping_security(root)
     
-    def _find_element_by_local_name(self, parent: ET.Element, local_name: str) -> Optional[ET.Element]:
+    def _find_element_by_local_name(self, parent: Element, local_name: str) -> Optional[Element]:
         """Find element by local name, ignoring namespace"""
         for elem in parent:
             elem_local_name = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag

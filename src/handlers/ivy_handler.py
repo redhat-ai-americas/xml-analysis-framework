@@ -6,11 +6,18 @@ Analyzes Apache Ivy dependency management files for dependency analysis,
 security scanning, license compliance, and build optimization.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -21,7 +28,7 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class IvyHandler(XMLHandler):
     """Handler for Apache Ivy dependency management files"""
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for Ivy root elements
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
@@ -58,7 +65,7 @@ class IvyHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
         # Determine file type
@@ -93,7 +100,7 @@ class IvyHandler(XMLHandler):
             metadata=metadata
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
         if root_tag == 'ivy-module':
@@ -151,7 +158,7 @@ class IvyHandler(XMLHandler):
             quality_metrics=self._assess_ivy_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'module_metadata': {
                 'version': root.get('version', '2.0'),
@@ -163,7 +170,7 @@ class IvyHandler(XMLHandler):
             'configuration_summary': self._extract_configuration_summary(root)
         }
     
-    def _analyze_module(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_module(self, root: Element) -> Dict[str, Any]:
         """Analyze Ivy module descriptor"""
         findings = {
             'ivy_info': {
@@ -180,7 +187,7 @@ class IvyHandler(XMLHandler):
         }
         return findings
     
-    def _analyze_settings(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_settings(self, root: Element) -> Dict[str, Any]:
         """Analyze Ivy settings file"""
         findings = {
             'ivy_info': {
@@ -194,7 +201,7 @@ class IvyHandler(XMLHandler):
         }
         return findings
     
-    def _extract_module_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_module_info(self, root: Element) -> Dict[str, Any]:
         """Extract basic module information"""
         info = self._find_element_by_local_name(root, 'info')
         if info is not None:
@@ -208,7 +215,7 @@ class IvyHandler(XMLHandler):
             }
         return {}
     
-    def _analyze_module_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_module_info(self, root: Element) -> Dict[str, Any]:
         """Analyze module information section"""
         module_info = {
             'has_info': False,
@@ -261,7 +268,7 @@ class IvyHandler(XMLHandler):
         
         return module_info
     
-    def _analyze_configurations(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_configurations(self, root: Element) -> Dict[str, Any]:
         """Analyze configuration definitions"""
         config_info = {
             'configuration_count': 0,
@@ -295,7 +302,7 @@ class IvyHandler(XMLHandler):
         
         return config_info
     
-    def _analyze_publications(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_publications(self, root: Element) -> Dict[str, Any]:
         """Analyze publication artifacts"""
         pub_info = {
             'publication_count': 0,
@@ -335,7 +342,7 @@ class IvyHandler(XMLHandler):
         
         return pub_info
     
-    def _analyze_dependencies(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_dependencies(self, root: Element) -> Dict[str, Any]:
         """Analyze dependency declarations"""
         dep_info = {
             'dependency_count': 0,
@@ -418,7 +425,7 @@ class IvyHandler(XMLHandler):
         
         return dep_info
     
-    def _analyze_conflicts(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_conflicts(self, root: Element) -> Dict[str, Any]:
         """Analyze conflict resolution settings"""
         conflict_info = {
             'conflict_managers': [],
@@ -442,7 +449,7 @@ class IvyHandler(XMLHandler):
         
         return conflict_info
     
-    def _analyze_repositories(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_repositories(self, root: Element) -> Dict[str, Any]:
         """Analyze repository information (limited in module files)"""
         repo_info = {
             'repository_count': 0,
@@ -460,7 +467,7 @@ class IvyHandler(XMLHandler):
         
         return repo_info
     
-    def _analyze_module_security(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_module_security(self, root: Element) -> Dict[str, Any]:
         """Analyze security aspects of module"""
         security_info = {
             'security_risks': [],
@@ -513,7 +520,7 @@ class IvyHandler(XMLHandler):
         
         return security_info
     
-    def _analyze_ivy_settings(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_ivy_settings(self, root: Element) -> Dict[str, Any]:
         """Analyze Ivy settings configuration"""
         settings_info = {
             'default_resolver': None,
@@ -531,7 +538,7 @@ class IvyHandler(XMLHandler):
         
         return settings_info
     
-    def _analyze_resolvers(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_resolvers(self, root: Element) -> Dict[str, Any]:
         """Analyze resolver configurations"""
         resolver_info = {
             'resolver_count': 0,
@@ -562,7 +569,7 @@ class IvyHandler(XMLHandler):
         
         return resolver_info
     
-    def _analyze_module_settings(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_module_settings(self, root: Element) -> Dict[str, Any]:
         """Analyze module-specific settings"""
         module_settings = {
             'module_count': 0,
@@ -584,7 +591,7 @@ class IvyHandler(XMLHandler):
         
         return module_settings
     
-    def _analyze_settings_security(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_settings_security(self, root: Element) -> Dict[str, Any]:
         """Analyze security aspects of settings"""
         security_info = {
             'security_risks': [],
@@ -611,7 +618,7 @@ class IvyHandler(XMLHandler):
         
         return security_info
     
-    def _count_dependencies(self, root: ET.Element) -> int:
+    def _count_dependencies(self, root: Element) -> int:
         """Count number of dependencies"""
         count = 0
         for elem in root.iter():
@@ -619,7 +626,7 @@ class IvyHandler(XMLHandler):
                 count += 1
         return count
     
-    def _count_publications(self, root: ET.Element) -> int:
+    def _count_publications(self, root: Element) -> int:
         """Count number of publications"""
         count = 0
         for elem in root.iter():
@@ -627,7 +634,7 @@ class IvyHandler(XMLHandler):
                 count += 1
         return count
     
-    def _determine_file_type(self, root: ET.Element) -> str:
+    def _determine_file_type(self, root: Element) -> str:
         """Determine if this is a module or settings file"""
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
@@ -638,7 +645,7 @@ class IvyHandler(XMLHandler):
         else:
             return 'Module Descriptor'  # Default
     
-    def _extract_dependency_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_dependency_summary(self, root: Element) -> Dict[str, Any]:
         """Extract dependency summary information"""
         dep_analysis = self._analyze_dependencies(root)
         return {
@@ -648,7 +655,7 @@ class IvyHandler(XMLHandler):
             'transitive_disabled': dep_analysis['transitive_disabled']
         }
     
-    def _extract_publication_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_publication_summary(self, root: Element) -> Dict[str, Any]:
         """Extract publication summary information"""
         pub_analysis = self._analyze_publications(root)
         return {
@@ -657,7 +664,7 @@ class IvyHandler(XMLHandler):
             'configurations_published': pub_analysis['configurations_published'][:5]  # Limit to first 5
         }
     
-    def _extract_configuration_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_configuration_summary(self, root: Element) -> Dict[str, Any]:
         """Extract configuration summary"""
         config_analysis = self._analyze_configurations(root)
         return {
@@ -666,7 +673,7 @@ class IvyHandler(XMLHandler):
             'extends_relationships': len(config_analysis['extends_relationships'])
         }
     
-    def _analyze_ivy_elements(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_ivy_elements(self, root: Element) -> Dict[str, Any]:
         """Generic analysis of Ivy elements"""
         return {
             'file_type': self._determine_file_type(root),
@@ -674,7 +681,7 @@ class IvyHandler(XMLHandler):
             'element_count': len(list(root.iter()))
         }
     
-    def _analyze_security(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_security(self, root: Element) -> Dict[str, Any]:
         """Generic security analysis"""
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
@@ -683,7 +690,7 @@ class IvyHandler(XMLHandler):
         else:
             return self._analyze_settings_security(root)
     
-    def _find_element_by_local_name(self, parent: ET.Element, local_name: str) -> Optional[ET.Element]:
+    def _find_element_by_local_name(self, parent: Element, local_name: str) -> Optional[Element]:
         """Find element by local name, ignoring namespace"""
         for elem in parent:
             elem_local_name = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
@@ -691,7 +698,7 @@ class IvyHandler(XMLHandler):
                 return elem
         return None
     
-    def _get_element_text(self, element: Optional[ET.Element]) -> Optional[str]:
+    def _get_element_text(self, element: Optional[Element]) -> Optional[str]:
         """Safely get text from element"""
         return element.text if element is not None else None
     

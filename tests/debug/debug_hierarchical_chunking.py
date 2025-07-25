@@ -5,7 +5,7 @@ Debug hierarchical chunking issue
 
 import sys
 import os
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 
 # Add src to path  
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))

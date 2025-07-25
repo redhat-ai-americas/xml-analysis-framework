@@ -10,11 +10,18 @@ Handles various enterprise XML configuration files including:
 - Generic application server configurations
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -59,7 +66,7 @@ class EnterpriseConfigHandler(XMLHandler):
         }
     }
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
         # Check each known pattern
@@ -102,7 +109,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
         # Determine specific configuration type
@@ -154,7 +161,7 @@ class EnterpriseConfigHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         config_type = self._determine_config_type(root)
         
         # Route to specific analysis based on type
@@ -197,7 +204,7 @@ class EnterpriseConfigHandler(XMLHandler):
             quality_metrics=self._assess_config_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         config_type = self._determine_config_type(root)
         
         base_data = {
@@ -217,7 +224,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return base_data
     
-    def _analyze_web_xml(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_web_xml(self, root: Element) -> Dict[str, Any]:
         """Analyze Java EE web.xml deployment descriptor"""
         findings = {
             'servlets': self._analyze_servlets(root),
@@ -232,7 +239,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return findings
     
-    def _analyze_tomcat_server(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_tomcat_server(self, root: Element) -> Dict[str, Any]:
         """Analyze Tomcat server.xml configuration"""
         findings = {
             'server_info': self._extract_server_info(root),
@@ -246,7 +253,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return findings
     
-    def _analyze_jboss_config(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_jboss_config(self, root: Element) -> Dict[str, Any]:
         """Analyze JBoss/WildFly configuration"""
         findings = {
             'profiles': self._extract_profiles(root),
@@ -259,7 +266,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return findings
     
-    def _analyze_generic_config(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_generic_config(self, root: Element) -> Dict[str, Any]:
         """Generic analysis for unknown enterprise configs"""
         findings = {
             'structure': self._analyze_structure(root),
@@ -272,7 +279,7 @@ class EnterpriseConfigHandler(XMLHandler):
         return findings
     
     # Web.xml specific methods
-    def _analyze_servlets(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_servlets(self, root: Element) -> List[Dict[str, Any]]:
         servlets = []
         
         # Handle different namespace possibilities
@@ -311,7 +318,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return servlets
     
-    def _analyze_filters(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_filters(self, root: Element) -> List[Dict[str, Any]]:
         filters = []
         
         filter_tags = root.findall('.//filter') + \
@@ -353,7 +360,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return filters
     
-    def _analyze_listeners(self, root: ET.Element) -> List[str]:
+    def _analyze_listeners(self, root: Element) -> List[str]:
         listeners = []
         
         listener_tags = root.findall('.//listener') + \
@@ -367,7 +374,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return listeners
     
-    def _analyze_web_security(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_web_security(self, root: Element) -> Dict[str, Any]:
         security = {
             'constraints': [],
             'roles': [],
@@ -436,7 +443,7 @@ class EnterpriseConfigHandler(XMLHandler):
         return security
     
     # Tomcat specific methods
-    def _analyze_connectors(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_connectors(self, root: Element) -> List[Dict[str, Any]]:
         connectors = []
         
         for connector in root.findall('.//Connector'):
@@ -455,7 +462,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return connectors
     
-    def _analyze_engines(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_engines(self, root: Element) -> List[Dict[str, Any]]:
         engines = []
         
         for engine in root.findall('.//Engine'):
@@ -479,7 +486,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return engines
     
-    def _analyze_hosts(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_hosts(self, root: Element) -> List[Dict[str, Any]]:
         hosts = []
         
         for host in root.findall('.//Host'):
@@ -511,7 +518,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return hosts
     
-    def _analyze_valves(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_valves(self, root: Element) -> List[Dict[str, Any]]:
         valves = []
         
         for valve in root.findall('.//Valve'):
@@ -538,7 +545,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return valves
     
-    def _analyze_realms(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_realms(self, root: Element) -> List[Dict[str, Any]]:
         realms = []
         
         for realm in root.findall('.//Realm'):
@@ -564,7 +571,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return realms
     
-    def _analyze_global_resources(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_global_resources(self, root: Element) -> List[Dict[str, Any]]:
         resources = []
         
         global_resources = root.find('.//GlobalNamingResources')
@@ -581,7 +588,7 @@ class EnterpriseConfigHandler(XMLHandler):
         return resources
     
     # JBoss/WildFly specific methods
-    def _extract_profiles(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_profiles(self, root: Element) -> List[Dict[str, Any]]:
         profiles = []
         
         for profile in root.findall('.//{urn:jboss:domain:*}profile'):
@@ -598,7 +605,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return profiles
     
-    def _analyze_subsystems(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_subsystems(self, root: Element) -> Dict[str, Any]:
         subsystems = {}
         
         # Common subsystems to look for
@@ -614,7 +621,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return subsystems
     
-    def _extract_interfaces(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_interfaces(self, root: Element) -> List[Dict[str, str]]:
         interfaces = []
         
         for interface in root.findall('.//*[local-name()="interface"]'):
@@ -626,7 +633,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return interfaces
     
-    def _extract_socket_bindings(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_socket_bindings(self, root: Element) -> List[Dict[str, Any]]:
         bindings = []
         
         for binding in root.findall('.//*[local-name()="socket-binding"]'):
@@ -638,7 +645,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return bindings[:10]  # Limit to first 10
     
-    def _extract_deployments(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_deployments(self, root: Element) -> List[Dict[str, str]]:
         deployments = []
         
         for deployment in root.findall('.//*[local-name()="deployment"]'):
@@ -649,7 +656,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return deployments
     
-    def _extract_jboss_datasources(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_jboss_datasources(self, root: Element) -> List[Dict[str, Any]]:
         datasources = []
         
         for ds in root.findall('.//*[local-name()="datasource"]'):
@@ -663,7 +670,7 @@ class EnterpriseConfigHandler(XMLHandler):
         return datasources
     
     # Generic analysis methods
-    def _analyze_structure(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_structure(self, root: Element) -> Dict[str, Any]:
         return {
             'root_element': root.tag,
             'total_elements': len(list(root.iter())),
@@ -671,7 +678,7 @@ class EnterpriseConfigHandler(XMLHandler):
             'unique_tags': len(set(elem.tag for elem in root.iter()))
         }
     
-    def _find_security_elements(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _find_security_elements(self, root: Element) -> List[Dict[str, Any]]:
         security_elements = []
         security_keywords = ['security', 'auth', 'role', 'permission', 'credential', 'password', 'realm']
         
@@ -686,7 +693,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return security_elements[:20]  # Limit results
     
-    def _find_connection_settings(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _find_connection_settings(self, root: Element) -> List[Dict[str, Any]]:
         connections = []
         connection_keywords = ['connection', 'datasource', 'pool', 'jdbc', 'url', 'host', 'port']
         
@@ -700,7 +707,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return connections[:15]
     
-    def _find_resource_pools(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _find_resource_pools(self, root: Element) -> List[Dict[str, Any]]:
         pools = []
         pool_keywords = ['pool', 'max-size', 'min-size', 'timeout']
         
@@ -714,7 +721,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return pools
     
-    def _find_deployment_settings(self, root: ET.Element) -> Dict[str, Any]:
+    def _find_deployment_settings(self, root: Element) -> Dict[str, Any]:
         deployment_info = {
             'contexts': [],
             'applications': [],
@@ -733,7 +740,7 @@ class EnterpriseConfigHandler(XMLHandler):
         return deployment_info
     
     # Utility methods
-    def _determine_config_type(self, root: ET.Element) -> str:
+    def _determine_config_type(self, root: Element) -> str:
         """Determine the specific configuration type"""
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
@@ -748,7 +755,7 @@ class EnterpriseConfigHandler(XMLHandler):
         else:
             return "Enterprise Application Configuration"
     
-    def _guess_file_type(self, root: ET.Element, namespaces: Dict[str, str]) -> str:
+    def _guess_file_type(self, root: Element, namespaces: Dict[str, str]) -> str:
         """Guess the configuration file type"""
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
@@ -763,7 +770,7 @@ class EnterpriseConfigHandler(XMLHandler):
         else:
             return 'config.xml'
     
-    def _get_child_text(self, parent: ET.Element, child_name: str) -> Optional[str]:
+    def _get_child_text(self, parent: Element, child_name: str) -> Optional[str]:
         """Get text content of a child element"""
         child = parent.find(f'.//{child_name}')
         if child is None:
@@ -775,7 +782,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return child.text if child is not None else None
     
-    def _extract_init_params(self, parent: ET.Element) -> Dict[str, str]:
+    def _extract_init_params(self, parent: Element) -> Dict[str, str]:
         """Extract init parameters"""
         params = {}
         
@@ -787,7 +794,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return params
     
-    def _extract_context_params(self, root: ET.Element) -> Dict[str, str]:
+    def _extract_context_params(self, root: Element) -> Dict[str, str]:
         """Extract context parameters"""
         params = {}
         
@@ -799,7 +806,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return params
     
-    def _extract_error_pages(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_error_pages(self, root: Element) -> List[Dict[str, str]]:
         """Extract error page mappings"""
         error_pages = []
         
@@ -822,7 +829,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return error_pages
     
-    def _extract_welcome_files(self, root: ET.Element) -> List[str]:
+    def _extract_welcome_files(self, root: Element) -> List[str]:
         """Extract welcome file list"""
         welcome_files = []
         
@@ -834,7 +841,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return welcome_files
     
-    def _extract_session_config(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_session_config(self, root: Element) -> Dict[str, Any]:
         """Extract session configuration"""
         session_config = {}
         
@@ -857,7 +864,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return session_config
     
-    def _extract_form_config(self, login_config: ET.Element) -> Optional[Dict[str, str]]:
+    def _extract_form_config(self, login_config: Element) -> Optional[Dict[str, str]]:
         """Extract form login configuration"""
         form_config = login_config.find('.//form-login-config')
         if form_config is not None:
@@ -867,7 +874,7 @@ class EnterpriseConfigHandler(XMLHandler):
             }
         return None
     
-    def _extract_server_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_server_info(self, root: Element) -> Dict[str, Any]:
         """Extract server-level information"""
         server = root
         
@@ -877,7 +884,7 @@ class EnterpriseConfigHandler(XMLHandler):
             'services': len(server.findall('.//Service'))
         }
     
-    def _extract_security_settings(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_security_settings(self, root: Element) -> Dict[str, Any]:
         """Extract security-related settings"""
         return {
             'security_constraints': len(root.findall('.//security-constraint')),
@@ -886,7 +893,7 @@ class EnterpriseConfigHandler(XMLHandler):
             'ssl_enabled': any(c.get('SSLEnabled') == 'true' for c in root.findall('.//Connector'))
         }
     
-    def _extract_resources(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_resources(self, root: Element) -> List[Dict[str, Any]]:
         """Extract resource definitions"""
         resources = []
         
@@ -908,7 +915,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return resources[:20]  # Limit
     
-    def _extract_deployment_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_deployment_info(self, root: Element) -> Dict[str, Any]:
         """Extract deployment-related information"""
         return {
             'contexts': [c.get('path') for c in root.findall('.//Context') if c.get('path')],
@@ -916,7 +923,7 @@ class EnterpriseConfigHandler(XMLHandler):
             'auto_deploy': any(h.get('autoDeploy') == 'true' for h in root.findall('.//Host'))
         }
     
-    def _extract_servlets(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_servlets(self, root: Element) -> List[Dict[str, str]]:
         """Extract servlet definitions"""
         servlets = []
         
@@ -929,7 +936,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return servlets[:20]
     
-    def _extract_filters(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_filters(self, root: Element) -> List[Dict[str, str]]:
         """Extract filter definitions"""
         filters = []
         
@@ -941,7 +948,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return filters[:20]
     
-    def _extract_connectors(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_connectors(self, root: Element) -> List[Dict[str, Any]]:
         """Extract connector configurations"""
         connectors = []
         
@@ -955,7 +962,7 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return connectors
     
-    def _extract_hosts(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_hosts(self, root: Element) -> List[Dict[str, str]]:
         """Extract host configurations"""
         hosts = []
         
@@ -968,13 +975,13 @@ class EnterpriseConfigHandler(XMLHandler):
         
         return hosts
     
-    def _calculate_max_depth(self, elem: ET.Element, depth: int = 0) -> int:
+    def _calculate_max_depth(self, elem: Element, depth: int = 0) -> int:
         """Calculate maximum depth of XML tree"""
         if not list(elem):
             return depth
         return max(self._calculate_max_depth(child, depth + 1) for child in elem)
     
-    def _check_sensitive_data(self, elem: ET.Element) -> bool:
+    def _check_sensitive_data(self, elem: Element) -> bool:
         """Check if element might contain sensitive data"""
         sensitive_keywords = ['password', 'secret', 'key', 'token', 'credential']
         

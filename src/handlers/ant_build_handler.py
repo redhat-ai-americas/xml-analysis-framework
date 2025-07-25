@@ -6,11 +6,18 @@ Analyzes Apache Ant build.xml files to extract build targets, tasks,
 properties, and dependencies for build analysis and CI/CD optimization.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -21,7 +28,7 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class AntBuildHandler(XMLHandler):
     """Handler for Apache Ant build.xml files"""
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for Ant project root element
         if root.tag == 'project' or root.tag.endswith('}project'):
             confidence = 0.0
@@ -49,7 +56,7 @@ class AntBuildHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         project_name = root.get('name', 'unknown')
         default_target = root.get('default', 'none')
         
@@ -84,7 +91,7 @@ class AntBuildHandler(XMLHandler):
             metadata=metadata
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'project_info': self._extract_project_info(root),
             'targets': self._analyze_targets(root),
@@ -135,7 +142,7 @@ class AntBuildHandler(XMLHandler):
             quality_metrics=self._assess_build_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'project_metadata': {
                 'name': root.get('name'),
@@ -148,7 +155,7 @@ class AntBuildHandler(XMLHandler):
             'task_summary': self._extract_task_summary(root)
         }
     
-    def _extract_project_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_project_info(self, root: Element) -> Dict[str, Any]:
         project_info = {
             'name': root.get('name'),
             'default_target': root.get('default'),
@@ -163,7 +170,7 @@ class AntBuildHandler(XMLHandler):
         
         return project_info
     
-    def _analyze_targets(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_targets(self, root: Element) -> List[Dict[str, Any]]:
         targets = []
         
         for target in root.findall('.//target'):
@@ -189,7 +196,7 @@ class AntBuildHandler(XMLHandler):
         
         return targets
     
-    def _extract_properties(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_properties(self, root: Element) -> Dict[str, Any]:
         properties = {
             'inline_properties': {},
             'property_files': [],
@@ -211,7 +218,7 @@ class AntBuildHandler(XMLHandler):
         
         return properties
     
-    def _analyze_paths(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_paths(self, root: Element) -> List[Dict[str, Any]]:
         paths = []
         
         for path in root.findall('.//path'):
@@ -240,7 +247,7 @@ class AntBuildHandler(XMLHandler):
         
         return paths
     
-    def _analyze_filesets(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_filesets(self, root: Element) -> List[Dict[str, Any]]:
         filesets = []
         
         for fileset in root.findall('.//fileset'):
@@ -271,7 +278,7 @@ class AntBuildHandler(XMLHandler):
         
         return filesets
     
-    def _analyze_dependencies(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_dependencies(self, root: Element) -> Dict[str, Any]:
         dependencies = {
             'ivy_dependencies': [],
             'jar_references': [],
@@ -314,7 +321,7 @@ class AntBuildHandler(XMLHandler):
         
         return dependencies
     
-    def _analyze_tasks(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_tasks(self, root: Element) -> Dict[str, Any]:
         task_summary = {
             'total_count': 0,
             'by_type': {},
@@ -352,7 +359,7 @@ class AntBuildHandler(XMLHandler):
         
         return task_summary
     
-    def _calculate_build_metrics(self, root: ET.Element) -> Dict[str, Any]:
+    def _calculate_build_metrics(self, root: Element) -> Dict[str, Any]:
         metrics = {
             'complexity_score': 0.0,
             'target_count': len(root.findall('.//target')),
@@ -387,7 +394,7 @@ class AntBuildHandler(XMLHandler):
         
         return metrics
     
-    def _extract_target_list(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_target_list(self, root: Element) -> List[Dict[str, str]]:
         targets = []
         for target in root.findall('.//target')[:10]:  # Limit to first 10
             targets.append({
@@ -397,14 +404,14 @@ class AntBuildHandler(XMLHandler):
             })
         return targets
     
-    def _extract_property_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_property_summary(self, root: Element) -> Dict[str, Any]:
         return {
             'total_properties': len(root.findall('.//property')),
             'property_files': [p.get('file') for p in root.findall('.//property[@file]') if p.get('file')],
             'sample_properties': {p.get('name'): p.get('value') for p in root.findall('.//property[@name][@value]')[:5]}
         }
     
-    def _extract_dependency_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_dependency_summary(self, root: Element) -> Dict[str, Any]:
         return {
             'has_ivy': any('ivy' in str(uri) for uri in [elem.tag for elem in root.iter()]),
             'jar_count': len([attr for elem in root.iter() for attr in elem.attrib.values() if '.jar' in str(attr)]),
@@ -412,7 +419,7 @@ class AntBuildHandler(XMLHandler):
                                 if 'lib' in str(attr).lower() and len(str(attr)) < 100]))[:5]
         }
     
-    def _extract_task_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_task_summary(self, root: Element) -> Dict[str, Any]:
         tasks = {}
         for target in root.findall('.//target'):
             for task in target:

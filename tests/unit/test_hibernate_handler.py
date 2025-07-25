@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from handlers.hibernate_handler import HibernateHandler
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 
 def test_hibernate_handler():
     """Test Hibernate handler with synthetic test files"""

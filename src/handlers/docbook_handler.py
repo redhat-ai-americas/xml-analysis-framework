@@ -6,10 +6,17 @@ Analyzes DocBook XML documentation files for structure analysis, content organiz
 technical documentation quality assessment, and documentation generation workflows.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -20,7 +27,7 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class DocBookHandler(XMLHandler):
     """Handler for DocBook XML documentation files"""
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for DocBook elements
         docbook_roots = ['book', 'article', 'chapter', 'section', 'para']
         tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
@@ -34,7 +41,7 @@ class DocBookHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
         # Detect DocBook version
@@ -56,7 +63,7 @@ class DocBookHandler(XMLHandler):
             metadata=metadata
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'docbook_info': {
                 'document_type': root.tag.split('}')[-1] if '}' in root.tag else root.tag,
@@ -120,7 +127,7 @@ class DocBookHandler(XMLHandler):
             quality_metrics=self._assess_documentation_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'document_metadata': {
                 'title': self._extract_title(root),
@@ -133,7 +140,7 @@ class DocBookHandler(XMLHandler):
             'technical_summary': self._extract_technical_summary(root)
         }
     
-    def _detect_docbook_version(self, root: ET.Element, namespaces: Dict[str, str]) -> str:
+    def _detect_docbook_version(self, root: Element, namespaces: Dict[str, str]) -> str:
         """Detect DocBook version from namespace or DTD"""
         # Check namespace for version
         for uri in namespaces.values():
@@ -159,7 +166,7 @@ class DocBookHandler(XMLHandler):
         # Default assumption
         return "5.0"
     
-    def _extract_namespace_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_namespace_info(self, root: Element) -> Dict[str, Any]:
         """Extract namespace information"""
         namespaces = {}
         for key, value in root.attrib.items():
@@ -173,7 +180,7 @@ class DocBookHandler(XMLHandler):
             'xlink_namespace': 'xlink' in namespaces
         }
     
-    def _analyze_document_structure(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_document_structure(self, root: Element) -> Dict[str, Any]:
         """Analyze document structure and hierarchy"""
         # Handle namespaced elements properly
         ns_prefix = '{http://docbook.org/ns/docbook}' if '}' in root.tag else ''
@@ -227,7 +234,7 @@ class DocBookHandler(XMLHandler):
         
         return structure
     
-    def _extract_metadata(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_metadata(self, root: Element) -> Dict[str, Any]:
         """Extract document metadata from info elements"""
         # DocBook 5.x uses 'info', 4.x uses specific info elements
         info = (root.find('.//info') or 
@@ -257,7 +264,7 @@ class DocBookHandler(XMLHandler):
         
         return metadata
     
-    def _analyze_content(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_content(self, root: Element) -> Dict[str, Any]:
         """Analyze content statistics and types"""
         # Handle namespaced elements properly
         ns_prefix = '{http://docbook.org/ns/docbook}' if '}' in root.tag else ''
@@ -291,7 +298,7 @@ class DocBookHandler(XMLHandler):
         
         return content_stats
     
-    def _find_media_references(self, root: ET.Element) -> Dict[str, Any]:
+    def _find_media_references(self, root: Element) -> Dict[str, Any]:
         """Find and analyze media references"""
         media_info = {
             'media_references': [],
@@ -338,7 +345,7 @@ class DocBookHandler(XMLHandler):
         
         return media_info
     
-    def _find_cross_references(self, root: ET.Element) -> Dict[str, Any]:
+    def _find_cross_references(self, root: Element) -> Dict[str, Any]:
         """Find and analyze cross-references"""
         xref_info = {
             'internal_references': [],
@@ -399,7 +406,7 @@ class DocBookHandler(XMLHandler):
         
         return xref_info
     
-    def _analyze_accessibility_features(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_accessibility_features(self, root: Element) -> Dict[str, Any]:
         """Analyze accessibility features"""
         accessibility = {
             'alt_text_coverage': 0,
@@ -461,7 +468,7 @@ class DocBookHandler(XMLHandler):
         
         return accessibility
     
-    def _analyze_quality_indicators(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_quality_indicators(self, root: Element) -> Dict[str, Any]:
         """Analyze documentation quality indicators"""
         quality = {
             'completeness_indicators': {},
@@ -509,7 +516,7 @@ class DocBookHandler(XMLHandler):
         
         return quality
     
-    def _analyze_localization_features(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_localization_features(self, root: Element) -> Dict[str, Any]:
         """Analyze localization and internationalization features"""
         localization = {
             'language_info': {},
@@ -535,7 +542,7 @@ class DocBookHandler(XMLHandler):
         
         return localization
     
-    def _analyze_publishing_features(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_publishing_features(self, root: Element) -> Dict[str, Any]:
         """Analyze publishing and output generation features"""
         publishing = {
             'output_hints': {},
@@ -559,7 +566,7 @@ class DocBookHandler(XMLHandler):
         
         return publishing
     
-    def _count_code_examples(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _count_code_examples(self, root: Element) -> List[Dict[str, Any]]:
         """Count and analyze code examples"""
         code_examples = []
         
@@ -582,13 +589,13 @@ class DocBookHandler(XMLHandler):
         
         return code_examples[:20]  # Limit to first 20 examples
     
-    def _calculate_max_depth(self, root: ET.Element, depth: int = 0) -> int:
+    def _calculate_max_depth(self, root: Element, depth: int = 0) -> int:
         """Calculate maximum nesting depth"""
         if not list(root):
             return depth
         return max(self._calculate_max_depth(child, depth + 1) for child in root)
     
-    def _analyze_hierarchy_consistency(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_hierarchy_consistency(self, root: Element) -> Dict[str, Any]:
         """Analyze document hierarchy consistency"""
         hierarchy = {
             'consistent_numbering': True,
@@ -606,7 +613,7 @@ class DocBookHandler(XMLHandler):
         
         return hierarchy
     
-    def _extract_author_info(self, info: ET.Element) -> Dict[str, Any]:
+    def _extract_author_info(self, info: Element) -> Dict[str, Any]:
         """Extract comprehensive author information"""
         authors = []
         
@@ -639,7 +646,7 @@ class DocBookHandler(XMLHandler):
         
         return authors if authors else None
     
-    def _extract_copyright_info(self, info: ET.Element) -> Optional[Dict[str, Any]]:
+    def _extract_copyright_info(self, info: Element) -> Optional[Dict[str, Any]]:
         """Extract copyright information"""
         copyright_elem = info.find('.//copyright')
         if copyright_elem is None:
@@ -657,7 +664,7 @@ class DocBookHandler(XMLHandler):
         
         return copyright_info
     
-    def _extract_abstract(self, info: ET.Element) -> Optional[str]:
+    def _extract_abstract(self, info: Element) -> Optional[str]:
         """Extract document abstract"""
         abstract = info.find('.//abstract')
         if abstract is not None:
@@ -668,7 +675,7 @@ class DocBookHandler(XMLHandler):
             return abstract.text
         return None
     
-    def _extract_keywords(self, info: ET.Element) -> List[str]:
+    def _extract_keywords(self, info: Element) -> List[str]:
         """Extract keywords"""
         keywords = []
         keywordset = info.find('.//keywordset')
@@ -678,7 +685,7 @@ class DocBookHandler(XMLHandler):
                     keywords.append(keyword.text)
         return keywords
     
-    def _extract_revision_history(self, info: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_revision_history(self, info: Element) -> List[Dict[str, Any]]:
         """Extract revision history"""
         revisions = []
         revhistory = info.find('.//revhistory')
@@ -706,7 +713,7 @@ class DocBookHandler(XMLHandler):
         
         return revisions
     
-    def _analyze_media_accessibility(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_media_accessibility(self, root: Element) -> Dict[str, Any]:
         """Analyze media accessibility features"""
         accessibility = {
             'images_with_alt': 0,
@@ -723,7 +730,7 @@ class DocBookHandler(XMLHandler):
         
         return accessibility
     
-    def _check_id_consistency(self, root: ET.Element) -> float:
+    def _check_id_consistency(self, root: Element) -> float:
         """Check consistency of ID attributes"""
         elements_with_ids = 0
         structural_elements = 0
@@ -735,17 +742,17 @@ class DocBookHandler(XMLHandler):
         
         return elements_with_ids / structural_elements if structural_elements > 0 else 1.0
     
-    def _check_semantic_markup(self, root: ET.Element) -> bool:
+    def _check_semantic_markup(self, root: Element) -> bool:
         """Check for proper semantic markup usage"""
         semantic_elements = ['emphasis', 'literal', 'filename', 'command', 'option', 'replaceable']
         return any(len(root.findall(f'.//{elem}')) > 0 for elem in semantic_elements)
     
-    def _check_proper_nesting(self, root: ET.Element) -> bool:
+    def _check_proper_nesting(self, root: Element) -> bool:
         """Check for proper element nesting"""
         # This is a simplified check - would need more comprehensive validation
         return True  # Assume proper nesting unless we detect issues
     
-    def _estimate_word_count(self, root: ET.Element) -> int:
+    def _estimate_word_count(self, root: Element) -> int:
         """Estimate word count for translatable content"""
         word_count = 0
         for elem in root.iter():
@@ -753,14 +760,14 @@ class DocBookHandler(XMLHandler):
                 word_count += len(elem.text.strip().split())
         return word_count
     
-    def _extract_title(self, root: ET.Element) -> str:
+    def _extract_title(self, root: Element) -> str:
         """Extract document title"""
         # Handle namespaced elements properly
         ns_prefix = '{http://docbook.org/ns/docbook}' if '}' in root.tag else ''
         title = root.find(f'.//{ns_prefix}title')
         return title.text if title is not None else 'Untitled Document'
     
-    def _extract_content_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_content_summary(self, root: Element) -> Dict[str, Any]:
         """Extract content summary"""
         content = self._analyze_content(root)
         return {
@@ -774,7 +781,7 @@ class DocBookHandler(XMLHandler):
             'estimated_reading_time': content['paragraphs'] * 0.5  # Rough estimate in minutes
         }
     
-    def _extract_structural_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_structural_summary(self, root: Element) -> Dict[str, Any]:
         """Extract structural summary"""
         structure = self._analyze_document_structure(root)
         return {
@@ -785,7 +792,7 @@ class DocBookHandler(XMLHandler):
             'has_appendices': len(structure['appendices']) > 0
         }
     
-    def _extract_technical_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_technical_summary(self, root: Element) -> Dict[str, Any]:
         """Extract technical summary"""
         return {
             'docbook_version': self._detect_docbook_version(root, {}),

@@ -9,11 +9,18 @@ and optimization.
 FIXED VERSION: Replaced all local-name() XPath usage with ElementTree-compatible methods.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -24,7 +31,7 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class BPMNHandler(XMLHandler):
     """Handler for BPMN 2.0 process definition files"""
     
-    def _find_elements_by_local_name(self, root: ET.Element, local_name: str) -> List[ET.Element]:
+    def _find_elements_by_local_name(self, root: Element, local_name: str) -> List[Element]:
         """Find elements by local name, ignoring namespace prefixes"""
         elements = []
         for elem in root.iter():
@@ -33,7 +40,7 @@ class BPMNHandler(XMLHandler):
                 elements.append(elem)
         return elements
     
-    def _find_element_by_local_name(self, root: ET.Element, local_name: str) -> Optional[ET.Element]:
+    def _find_element_by_local_name(self, root: Element, local_name: str) -> Optional[Element]:
         """Find first element by local name, ignoring namespace prefixes"""
         for elem in root.iter():
             tag = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
@@ -41,7 +48,7 @@ class BPMNHandler(XMLHandler):
                 return elem
         return None
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for BPMN namespace
         if any('bpmn' in uri.lower() or 'omg.org/spec/BPMN' in uri for uri in namespaces.values()):
             return True, 1.0
@@ -57,7 +64,7 @@ class BPMNHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Extract BPMN version
         version = "2.0"  # Default
         for uri in namespaces.values():
@@ -80,7 +87,7 @@ class BPMNHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'processes': self._analyze_processes(root),
             'activities': self._analyze_activities(root),
@@ -128,7 +135,7 @@ class BPMNHandler(XMLHandler):
             quality_metrics=self._assess_process_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'process_hierarchy': self._extract_process_hierarchy(root),
             'activity_sequences': self._extract_activity_sequences(root),
@@ -137,7 +144,7 @@ class BPMNHandler(XMLHandler):
             'process_metrics': self._extract_process_metrics(root)
         }
     
-    def _analyze_processes(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_processes(self, root: Element) -> List[Dict[str, Any]]:
         """Analyze process definitions"""
         processes = []
         
@@ -172,7 +179,7 @@ class BPMNHandler(XMLHandler):
         
         return processes
     
-    def _analyze_activities(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_activities(self, root: Element) -> Dict[str, Any]:
         """Analyze all activities (tasks, subprocesses, etc.)"""
         activities = {
             'total': 0,
@@ -243,7 +250,7 @@ class BPMNHandler(XMLHandler):
         
         return activities
     
-    def _analyze_gateways(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_gateways(self, root: Element) -> Dict[str, Any]:
         """Analyze gateways (decision points)"""
         gateways = {
             'total': 0,
@@ -277,7 +284,7 @@ class BPMNHandler(XMLHandler):
         
         return gateways
     
-    def _analyze_events(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_events(self, root: Element) -> Dict[str, Any]:
         """Analyze events (start, end, intermediate)"""
         events = {
             'total': 0,
@@ -343,7 +350,7 @@ class BPMNHandler(XMLHandler):
         
         return events
     
-    def _determine_event_type(self, event: ET.Element) -> str:
+    def _determine_event_type(self, event: Element) -> str:
         """Determine the specific type of event"""
         event_types = [
             'messageEventDefinition', 'timerEventDefinition', 'errorEventDefinition',
@@ -357,7 +364,7 @@ class BPMNHandler(XMLHandler):
         
         return 'none'
     
-    def _analyze_flows(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_flows(self, root: Element) -> List[Dict[str, Any]]:
         """Analyze sequence flows"""
         flows = []
         
@@ -380,7 +387,7 @@ class BPMNHandler(XMLHandler):
         
         return flows
     
-    def _is_default_flow(self, root: ET.Element, flow: ET.Element) -> bool:
+    def _is_default_flow(self, root: Element, flow: Element) -> bool:
         """Check if a flow is marked as default"""
         flow_id = flow.get('id')
         
@@ -391,7 +398,7 @@ class BPMNHandler(XMLHandler):
         
         return False
     
-    def _analyze_lanes(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_lanes(self, root: Element) -> List[Dict[str, Any]]:
         """Analyze lanes and pools (organizational units)"""
         lanes = []
         
@@ -411,7 +418,7 @@ class BPMNHandler(XMLHandler):
         
         return lanes
     
-    def _analyze_data_objects(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_data_objects(self, root: Element) -> List[Dict[str, Any]]:
         """Analyze data objects and data stores"""
         data_objects = []
         
@@ -445,7 +452,7 @@ class BPMNHandler(XMLHandler):
         
         return data_objects
     
-    def _calculate_complexity_metrics(self, root: ET.Element) -> Dict[str, Any]:
+    def _calculate_complexity_metrics(self, root: Element) -> Dict[str, Any]:
         """Calculate process complexity metrics"""
         total_activities = len(self._find_elements_by_local_name(root, 'task'))
         total_gateways = (len(self._find_elements_by_local_name(root, 'exclusiveGateway')) +
@@ -478,7 +485,7 @@ class BPMNHandler(XMLHandler):
         
         return metrics
     
-    def _extract_process_hierarchy(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_process_hierarchy(self, root: Element) -> Dict[str, Any]:
         """Extract process hierarchy and relationships"""
         hierarchy = {}
         
@@ -507,7 +514,7 @@ class BPMNHandler(XMLHandler):
         
         return hierarchy
     
-    def _extract_activity_sequences(self, root: ET.Element) -> List[List[str]]:
+    def _extract_activity_sequences(self, root: Element) -> List[List[str]]:
         """Extract common activity sequences"""
         sequences = []
         
@@ -556,7 +563,7 @@ class BPMNHandler(XMLHandler):
         dfs(start, [], set())
         return paths
     
-    def _extract_decision_points(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_decision_points(self, root: Element) -> List[Dict[str, Any]]:
         """Extract decision points and their conditions"""
         decision_points = []
         
@@ -586,7 +593,7 @@ class BPMNHandler(XMLHandler):
         
         return decision_points[:10]  # Limit
     
-    def _extract_resource_assignments(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_resource_assignments(self, root: Element) -> List[Dict[str, Any]]:
         """Extract resource assignments from lanes and tasks"""
         assignments = []
         
@@ -627,7 +634,7 @@ class BPMNHandler(XMLHandler):
         
         return assignments[:20]  # Limit
     
-    def _extract_process_metrics(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_process_metrics(self, root: Element) -> Dict[str, Any]:
         """Extract process metrics and KPIs"""
         metrics = {
             'process_count': len(self._find_elements_by_local_name(root, 'process')),

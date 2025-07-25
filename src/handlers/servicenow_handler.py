@@ -14,13 +14,20 @@ Key features:
 - Support for custom fields (u_ prefix)
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime
 import base64
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -31,7 +38,7 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class ServiceNowHandler(XMLHandler):
     """Handler for ServiceNow export XML documents"""
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         """Check if this is a ServiceNow export file"""
         score = 0.0
         
@@ -55,7 +62,7 @@ class ServiceNowHandler(XMLHandler):
                 
         return score > 0.5, min(score, 1.0)
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         """Detect ServiceNow document type and extract metadata"""
         # Identify primary record type
         record_types = []
@@ -79,7 +86,7 @@ class ServiceNowHandler(XMLHandler):
             metadata=metadata
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         """Perform comprehensive analysis of ServiceNow data"""
         findings = {}
         
@@ -115,7 +122,7 @@ class ServiceNowHandler(XMLHandler):
             quality_metrics=self._calculate_quality_metrics(root)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         """Extract structured data from ServiceNow export"""
         primary_record = self._get_primary_record(root)
         
@@ -129,14 +136,14 @@ class ServiceNowHandler(XMLHandler):
         
         return data
     
-    def _get_primary_record(self, root: ET.Element) -> Optional[ET.Element]:
+    def _get_primary_record(self, root: Element) -> Optional[Element]:
         """Get the primary record element (incident, problem, etc.)"""
         for child in root:
             if child.tag not in ['sys_journal_field', 'sys_attachment', 'sys_attachment_doc']:
                 return child
         return None
     
-    def _analyze_primary_record(self, record: ET.Element) -> Dict[str, Any]:
+    def _analyze_primary_record(self, record: Element) -> Dict[str, Any]:
         """Analyze the primary ServiceNow record"""
         analysis = {
             'record_type': record.tag,
@@ -162,7 +169,7 @@ class ServiceNowHandler(XMLHandler):
         
         return analysis
     
-    def _analyze_journal_entries(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_journal_entries(self, root: Element) -> Dict[str, Any]:
         """Analyze journal entries (comments and work notes)"""
         entries = root.findall('.//sys_journal_field')
         
@@ -184,7 +191,7 @@ class ServiceNowHandler(XMLHandler):
             'conversation_duration': self._calculate_conversation_duration(entries)
         }
     
-    def _analyze_attachments(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_attachments(self, root: Element) -> Dict[str, Any]:
         """Analyze attachments in the export"""
         attachments = root.findall('.//sys_attachment')
         
@@ -205,7 +212,7 @@ class ServiceNowHandler(XMLHandler):
         
         return analysis
     
-    def _extract_sla_metrics(self, record: Optional[ET.Element]) -> Dict[str, Any]:
+    def _extract_sla_metrics(self, record: Optional[Element]) -> Dict[str, Any]:
         """Extract SLA and performance metrics"""
         if record is None:
             return {}
@@ -221,7 +228,7 @@ class ServiceNowHandler(XMLHandler):
         
         return {k: v for k, v in metrics.items() if v}
     
-    def _analyze_workflow(self, record: Optional[ET.Element], root: ET.Element) -> Dict[str, Any]:
+    def _analyze_workflow(self, record: Optional[Element], root: Element) -> Dict[str, Any]:
         """Analyze workflow and assignment patterns"""
         if record is None:
             return {}
@@ -236,7 +243,7 @@ class ServiceNowHandler(XMLHandler):
         
         return analysis
     
-    def _extract_ticket_info(self, record: Optional[ET.Element]) -> Dict[str, Any]:
+    def _extract_ticket_info(self, record: Optional[Element]) -> Dict[str, Any]:
         """Extract core ticket information"""
         if record is None:
             return {}
@@ -254,7 +261,7 @@ class ServiceNowHandler(XMLHandler):
             'close_notes': self._get_field_value(record, 'close_notes')
         }
     
-    def _extract_conversation_thread(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_conversation_thread(self, root: Element) -> List[Dict[str, Any]]:
         """Extract and structure the conversation thread"""
         entries = root.findall('.//sys_journal_field')
         
@@ -273,7 +280,7 @@ class ServiceNowHandler(XMLHandler):
         
         return thread
     
-    def _extract_attachment_info(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_attachment_info(self, root: Element) -> List[Dict[str, Any]]:
         """Extract attachment information"""
         attachments = root.findall('.//sys_attachment')
         
@@ -290,7 +297,7 @@ class ServiceNowHandler(XMLHandler):
         
         return attachment_list
     
-    def _extract_timeline(self, record: Optional[ET.Element], root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_timeline(self, record: Optional[Element], root: Element) -> List[Dict[str, Any]]:
         """Extract timeline of events"""
         events = []
         
@@ -335,7 +342,7 @@ class ServiceNowHandler(XMLHandler):
         
         return events
     
-    def _extract_people(self, record: Optional[ET.Element], root: ET.Element) -> Dict[str, List[str]]:
+    def _extract_people(self, record: Optional[Element], root: Element) -> Dict[str, List[str]]:
         """Extract all people involved in the ticket"""
         people = {
             'requesters': [],
@@ -374,7 +381,7 @@ class ServiceNowHandler(XMLHandler):
         
         return people
     
-    def _extract_custom_fields(self, record: ET.Element) -> Dict[str, str]:
+    def _extract_custom_fields(self, record: Element) -> Dict[str, str]:
         """Extract custom fields (u_ prefix)"""
         custom_fields = {}
         
@@ -384,7 +391,7 @@ class ServiceNowHandler(XMLHandler):
         
         return custom_fields
     
-    def _get_field_value(self, element: Optional[ET.Element], field_name: str) -> Optional[str]:
+    def _get_field_value(self, element: Optional[Element], field_name: str) -> Optional[str]:
         """Get text value of a field"""
         if element is None:
             return None
@@ -393,7 +400,7 @@ class ServiceNowHandler(XMLHandler):
             return field.text.strip()
         return None
     
-    def _get_field_display_value(self, element: Optional[ET.Element], field_name: str) -> Optional[str]:
+    def _get_field_display_value(self, element: Optional[Element], field_name: str) -> Optional[str]:
         """Get display_value attribute of a field"""
         if element is None:
             return None
@@ -402,7 +409,7 @@ class ServiceNowHandler(XMLHandler):
             return field.get('display_value', field.text)
         return None
     
-    def _calculate_resolution_time(self, record: ET.Element) -> Optional[str]:
+    def _calculate_resolution_time(self, record: Element) -> Optional[str]:
         """Calculate time to resolution"""
         opened = self._get_field_value(record, 'opened_at')
         resolved = self._get_field_value(record, 'resolved_at')
@@ -418,7 +425,7 @@ class ServiceNowHandler(XMLHandler):
         
         return None
     
-    def _count_unique_contributors(self, entries: List[ET.Element]) -> int:
+    def _count_unique_contributors(self, entries: List[Element]) -> int:
         """Count unique contributors to journal entries"""
         contributors = set()
         for entry in entries:
@@ -427,7 +434,7 @@ class ServiceNowHandler(XMLHandler):
                 contributors.add(created_by)
         return len(contributors)
     
-    def _calculate_conversation_duration(self, entries: List[ET.Element]) -> Optional[str]:
+    def _calculate_conversation_duration(self, entries: List[Element]) -> Optional[str]:
         """Calculate duration of conversation"""
         timestamps = []
         for entry in entries:
@@ -447,7 +454,7 @@ class ServiceNowHandler(XMLHandler):
         
         return None
     
-    def _analyze_state_transitions(self, record: ET.Element, root: ET.Element) -> List[str]:
+    def _analyze_state_transitions(self, record: Element, root: Element) -> List[str]:
         """Analyze state transitions from journal entries"""
         # This would require parsing work notes for state changes
         # For now, return basic transition
@@ -460,7 +467,7 @@ class ServiceNowHandler(XMLHandler):
         
         return transitions
     
-    def _create_data_inventory(self, root: ET.Element) -> Dict[str, int]:
+    def _create_data_inventory(self, root: Element) -> Dict[str, int]:
         """Create inventory of data types found"""
         inventory = {
             'incidents': len(root.findall('.//incident')),
@@ -532,7 +539,7 @@ class ServiceNowHandler(XMLHandler):
         
         return use_cases
     
-    def _calculate_quality_metrics(self, root: ET.Element) -> Dict[str, float]:
+    def _calculate_quality_metrics(self, root: Element) -> Dict[str, float]:
         """Calculate data quality metrics"""
         primary = self._get_primary_record(root)
         

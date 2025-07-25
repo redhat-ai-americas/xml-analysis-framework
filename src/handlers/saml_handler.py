@@ -6,12 +6,19 @@ Analyzes SAML (Security Assertion Markup Language) assertions, responses, and re
 for security analysis, SSO configuration validation, and identity management.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -28,7 +35,7 @@ class SAMLHandler(XMLHandler):
     SAML_11_ASSERTION_NS = "urn:oasis:names:tc:SAML:1.0:assertion"
     SAML_11_PROTOCOL_NS = "urn:oasis:names:tc:SAML:1.0:protocol"
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for SAML root elements
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
@@ -72,7 +79,7 @@ class SAMLHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Determine SAML version
         version = self._get_saml_version(root, namespaces)
         
@@ -99,7 +106,7 @@ class SAMLHandler(XMLHandler):
             metadata=metadata
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'saml_info': self._analyze_saml_document(root),
             'assertions': self._analyze_assertions(root),
@@ -153,7 +160,7 @@ class SAMLHandler(XMLHandler):
             quality_metrics=self._assess_saml_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'document_metadata': {
                 'version': self._get_saml_version(root, {}),
@@ -168,7 +175,7 @@ class SAMLHandler(XMLHandler):
             'conditions_summary': self._extract_conditions_summary(root)
         }
     
-    def _get_saml_version(self, root: ET.Element, namespaces: Dict[str, str]) -> str:
+    def _get_saml_version(self, root: Element, namespaces: Dict[str, str]) -> str:
         """Determine SAML version from namespace or version attribute"""
         # Check version attribute first
         version = root.get('Version')
@@ -192,7 +199,7 @@ class SAMLHandler(XMLHandler):
         
         return "2.0"  # Default to 2.0
     
-    def _determine_message_type(self, root: ET.Element) -> str:
+    def _determine_message_type(self, root: Element) -> str:
         """Determine SAML message type from root element"""
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
@@ -208,24 +215,24 @@ class SAMLHandler(XMLHandler):
         
         return type_mapping.get(root_tag, root_tag)
     
-    def _extract_issuer(self, root: ET.Element) -> Optional[str]:
+    def _extract_issuer(self, root: Element) -> Optional[str]:
         """Extract issuer information"""
         issuer = self._find_element_by_local_name(root, 'Issuer')
         if issuer is not None and issuer.text:
             return issuer.text.strip()
         return None
     
-    def _has_signature(self, root: ET.Element) -> bool:
+    def _has_signature(self, root: Element) -> bool:
         """Check if document has digital signature"""
         return self._find_element_by_local_name(root, 'Signature') is not None
     
-    def _has_encryption(self, root: ET.Element) -> bool:
+    def _has_encryption(self, root: Element) -> bool:
         """Check if document has encrypted elements"""
         return (self._find_element_by_local_name(root, 'EncryptedAssertion') is not None or
                 self._find_element_by_local_name(root, 'EncryptedID') is not None or
                 self._find_element_by_local_name(root, 'EncryptedAttribute') is not None)
     
-    def _count_assertions(self, root: ET.Element) -> int:
+    def _count_assertions(self, root: Element) -> int:
         """Count number of assertions"""
         assertions = []
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
@@ -241,7 +248,7 @@ class SAMLHandler(XMLHandler):
         
         return len(assertions)
     
-    def _analyze_saml_document(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_saml_document(self, root: Element) -> Dict[str, Any]:
         """Analyze SAML document properties"""
         return {
             'version': self._get_saml_version(root, {}),
@@ -256,7 +263,7 @@ class SAMLHandler(XMLHandler):
             'has_encryption': self._has_encryption(root)
         }
     
-    def _analyze_assertions(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_assertions(self, root: Element) -> Dict[str, Any]:
         """Analyze SAML assertions"""
         assertion_info = {
             'assertion_count': 0,
@@ -296,7 +303,7 @@ class SAMLHandler(XMLHandler):
         
         return assertion_info
     
-    def _analyze_subject(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_subject(self, root: Element) -> Dict[str, Any]:
         """Analyze subject information"""
         subject_info = {
             'has_subject': False,
@@ -332,7 +339,7 @@ class SAMLHandler(XMLHandler):
         
         return subject_info
     
-    def _analyze_conditions(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_conditions(self, root: Element) -> Dict[str, Any]:
         """Analyze SAML conditions"""
         conditions_info = {
             'has_conditions': False,
@@ -363,7 +370,7 @@ class SAMLHandler(XMLHandler):
         
         return conditions_info
     
-    def _analyze_attributes(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_attributes(self, root: Element) -> Dict[str, Any]:
         """Analyze attribute statements"""
         attr_info = {
             'attribute_statements': [],
@@ -406,7 +413,7 @@ class SAMLHandler(XMLHandler):
         
         return attr_info
     
-    def _analyze_authentication(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_authentication(self, root: Element) -> Dict[str, Any]:
         """Analyze authentication statements"""
         auth_info = {
             'authn_statements': [],
@@ -444,7 +451,7 @@ class SAMLHandler(XMLHandler):
         
         return auth_info
     
-    def _analyze_security(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_security(self, root: Element) -> Dict[str, Any]:
         """Analyze security-related elements"""
         security_info = {
             'has_signature': self._has_signature(root),
@@ -488,7 +495,7 @@ class SAMLHandler(XMLHandler):
         
         return security_info
     
-    def _analyze_namespaces(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_namespaces(self, root: Element) -> Dict[str, Any]:
         """Analyze namespace declarations"""
         namespaces_info = {
             'declared_namespaces': {},
@@ -518,7 +525,7 @@ class SAMLHandler(XMLHandler):
         
         return namespaces_info
     
-    def _calculate_validation_metrics(self, root: ET.Element) -> Dict[str, Any]:
+    def _calculate_validation_metrics(self, root: Element) -> Dict[str, Any]:
         """Calculate SAML validation metrics"""
         metrics = {
             'total_elements': 0,
@@ -571,7 +578,7 @@ class SAMLHandler(XMLHandler):
         
         return metrics
     
-    def _count_statements(self, assertion: ET.Element) -> Dict[str, int]:
+    def _count_statements(self, assertion: Element) -> Dict[str, int]:
         """Count different types of statements in assertion"""
         statements = {
             'AuthnStatement': 0,
@@ -586,7 +593,7 @@ class SAMLHandler(XMLHandler):
         
         return statements
     
-    def _extract_security_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_security_summary(self, root: Element) -> Dict[str, Any]:
         """Extract security summary information"""
         security_analysis = self._analyze_security(root)
         return {
@@ -597,7 +604,7 @@ class SAMLHandler(XMLHandler):
             'security_risks': security_analysis['security_risks']
         }
     
-    def _extract_subject_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_subject_summary(self, root: Element) -> Dict[str, Any]:
         """Extract subject summary information"""
         subject_analysis = self._analyze_subject(root)
         return {
@@ -607,7 +614,7 @@ class SAMLHandler(XMLHandler):
             'confirmation_methods': [conf['method'] for conf in subject_analysis['subject_confirmations']]
         }
     
-    def _extract_assertion_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_assertion_summary(self, root: Element) -> Dict[str, Any]:
         """Extract assertion summary information"""
         assertion_analysis = self._analyze_assertions(root)
         return {
@@ -617,7 +624,7 @@ class SAMLHandler(XMLHandler):
                               if detail['issuer']))
         }
     
-    def _extract_conditions_summary(self, root: ET.Element) -> Optional[Dict[str, Any]]:
+    def _extract_conditions_summary(self, root: Element) -> Optional[Dict[str, Any]]:
         """Extract conditions summary information"""
         conditions_analysis = self._analyze_conditions(root)
         if conditions_analysis['has_conditions']:
@@ -629,7 +636,7 @@ class SAMLHandler(XMLHandler):
             }
         return None
     
-    def _find_element_by_local_name(self, parent: ET.Element, local_name: str) -> Optional[ET.Element]:
+    def _find_element_by_local_name(self, parent: Element, local_name: str) -> Optional[Element]:
         """Find element by local name, ignoring namespace"""
         for elem in parent:
             elem_local_name = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag

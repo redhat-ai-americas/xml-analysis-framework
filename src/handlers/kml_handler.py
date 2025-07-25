@@ -7,11 +7,18 @@ geographic visualization applications. Extracts placemarks, paths,
 polygons, styles, and other geographic features.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -25,13 +32,13 @@ class KMLHandler(XMLHandler):
     KML_NAMESPACE = "http://www.opengis.net/kml/2.2"
     EARTH_NAMESPACE = "http://earth.google.com/kml/2.2"
     
-    def _get_namespace(self, root: ET.Element) -> str:
+    def _get_namespace(self, root: Element) -> str:
         """Extract namespace prefix from root element"""
         if '}' in root.tag:
             return root.tag.split('}')[0] + '}'
         return ''
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for KML namespace
         if any('opengis.net/kml' in uri or 'earth.google.com/kml' in uri for uri in namespaces.values()):
             return True, 1.0
@@ -47,7 +54,7 @@ class KMLHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Detect KML version
         version = "2.2"  # Default
         for uri in namespaces.values():
@@ -77,7 +84,7 @@ class KMLHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'structure': self._analyze_structure(root),
             'placemarks': self._analyze_placemarks(root),
@@ -127,7 +134,7 @@ class KMLHandler(XMLHandler):
             quality_metrics=self._calculate_quality_metrics(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'geographic_bounds': self._extract_bounds(root),
             'feature_collection': self._extract_features(root),
@@ -136,7 +143,7 @@ class KMLHandler(XMLHandler):
             'coordinate_systems': self._extract_coordinate_info(root)
         }
     
-    def _analyze_structure(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_structure(self, root: Element) -> Dict[str, Any]:
         """Analyze overall KML document structure"""
         structure = {
             'documents': 0,
@@ -177,7 +184,7 @@ class KMLHandler(XMLHandler):
         
         return structure
     
-    def _analyze_placemarks(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_placemarks(self, root: Element) -> List[Dict[str, Any]]:
         """Analyze Placemark elements"""
         placemarks = []
         ns = self._get_namespace(root)
@@ -229,7 +236,7 @@ class KMLHandler(XMLHandler):
         
         return placemarks
     
-    def _analyze_geometries(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_geometries(self, root: Element) -> Dict[str, Any]:
         """Analyze geometric elements"""
         geometries = {
             'total': 0,
@@ -273,7 +280,7 @@ class KMLHandler(XMLHandler):
         
         return geometries
     
-    def _analyze_styles(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_styles(self, root: Element) -> List[Dict[str, Any]]:
         """Analyze style definitions"""
         styles = []
         
@@ -333,7 +340,7 @@ class KMLHandler(XMLHandler):
         
         return styles[:50]  # Limit
     
-    def _analyze_overlays(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_overlays(self, root: Element) -> Dict[str, Any]:
         """Analyze overlay elements"""
         overlays = {
             'total': 0,
@@ -374,7 +381,7 @@ class KMLHandler(XMLHandler):
         
         return overlays
     
-    def _analyze_network_links(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_network_links(self, root: Element) -> List[Dict[str, Any]]:
         """Analyze NetworkLink elements"""
         network_links = []
         
@@ -390,7 +397,7 @@ class KMLHandler(XMLHandler):
         
         return network_links
     
-    def _analyze_tours(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_tours(self, root: Element) -> Dict[str, Any]:
         """Analyze Google Earth Tour elements"""
         tours = {
             'count': 0,
@@ -415,7 +422,7 @@ class KMLHandler(XMLHandler):
         
         return tours
     
-    def _assess_data_quality(self, root: ET.Element) -> Dict[str, Any]:
+    def _assess_data_quality(self, root: Element) -> Dict[str, Any]:
         """Assess the quality of KML data"""
         quality = {
             'has_names': 0,
@@ -454,7 +461,7 @@ class KMLHandler(XMLHandler):
         
         return quality
     
-    def _extract_bounds(self, root: ET.Element) -> Dict[str, float]:
+    def _extract_bounds(self, root: Element) -> Dict[str, float]:
         """Extract geographic bounds from coordinates"""
         bounds = {
             'north': -90.0,
@@ -490,7 +497,7 @@ class KMLHandler(XMLHandler):
         
         return bounds
     
-    def _extract_features(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_features(self, root: Element) -> List[Dict[str, Any]]:
         """Extract key features for analysis"""
         features = []
         
@@ -554,7 +561,7 @@ class KMLHandler(XMLHandler):
         
         return coordinates
     
-    def _extract_style_definitions(self, root: ET.Element) -> Dict[str, Dict[str, Any]]:
+    def _extract_style_definitions(self, root: Element) -> Dict[str, Dict[str, Any]]:
         """Extract style definitions for reuse"""
         styles = {}
         
@@ -577,7 +584,7 @@ class KMLHandler(XMLHandler):
         
         return styles
     
-    def _extract_metadata(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_metadata(self, root: Element) -> Dict[str, Any]:
         """Extract document metadata"""
         metadata = {
             'name': self._get_element_text(root, './/Document/name'),
@@ -605,7 +612,7 @@ class KMLHandler(XMLHandler):
         
         return metadata
     
-    def _extract_coordinate_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_coordinate_info(self, root: Element) -> Dict[str, Any]:
         """Extract coordinate system information"""
         coord_info = {
             'altitude_modes_used': [],
@@ -635,7 +642,7 @@ class KMLHandler(XMLHandler):
         
         return coord_info
     
-    def _calculate_max_depth(self, element: ET.Element, current_depth: int = 0) -> int:
+    def _calculate_max_depth(self, element: Element, current_depth: int = 0) -> int:
         """Calculate maximum nesting depth"""
         if not list(element):
             return current_depth
@@ -647,7 +654,7 @@ class KMLHandler(XMLHandler):
         
         return max_child_depth
     
-    def _get_element_text(self, parent: ET.Element, path: str, default: str = None, 
+    def _get_element_text(self, parent: Element, path: str, default: str = None, 
                          namespaces: Dict[str, str] = None) -> Optional[str]:
         """Safely get element text"""
         elem = parent.find(path, namespaces) if namespaces else parent.find(path)

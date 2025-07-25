@@ -10,10 +10,17 @@ This handler serves as the default option and performs basic XML document
 analysis including structure analysis, pattern detection, and data extraction.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -24,11 +31,11 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class GenericXMLHandler(XMLHandler):
     """Fallback handler for generic XML documents"""
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # This handler can handle any XML
         return True, 0.1  # Low confidence as it's a fallback
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Try to infer type from root element and namespaces
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
@@ -41,7 +48,7 @@ class GenericXMLHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'structure': self._analyze_structure(root),
             'data_patterns': self._detect_patterns(root),
@@ -71,20 +78,20 @@ class GenericXMLHandler(XMLHandler):
             quality_metrics=self._analyze_quality(root)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'sample_data': self._extract_samples(root),
             'schema_inference': self._infer_schema(root)
         }
     
-    def _analyze_structure(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_structure(self, root: Element) -> Dict[str, Any]:
         return {
             'max_depth': self._calculate_depth(root),
             'element_count': len(list(root.iter())),
             'unique_paths': len(self._get_unique_paths(root))
         }
     
-    def _detect_patterns(self, root: ET.Element) -> Dict[str, Any]:
+    def _detect_patterns(self, root: Element) -> Dict[str, Any]:
         # Detect repeating structures
         element_counts = {}
         for elem in root.iter():
@@ -96,21 +103,21 @@ class GenericXMLHandler(XMLHandler):
             'likely_records': [k for k, v in element_counts.items() if v > 10]
         }
     
-    def _analyze_attributes(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_attributes(self, root: Element) -> Dict[str, Any]:
         attr_usage = {}
         for elem in root.iter():
             for attr in elem.attrib:
                 attr_usage[attr] = attr_usage.get(attr, 0) + 1
         return attr_usage
     
-    def _inventory_data(self, root: ET.Element) -> Dict[str, int]:
+    def _inventory_data(self, root: Element) -> Dict[str, int]:
         inventory = {}
         for elem in root.iter():
             tag = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
             inventory[tag] = inventory.get(tag, 0) + 1
         return inventory
     
-    def _extract_samples(self, root: ET.Element, max_samples: int = 5) -> List[Dict[str, Any]]:
+    def _extract_samples(self, root: Element, max_samples: int = 5) -> List[Dict[str, Any]]:
         samples = []
         for i, elem in enumerate(root.iter()):
             if i >= max_samples:
@@ -124,19 +131,19 @@ class GenericXMLHandler(XMLHandler):
                 })
         return samples
     
-    def _infer_schema(self, root: ET.Element) -> Dict[str, Any]:
+    def _infer_schema(self, root: Element) -> Dict[str, Any]:
         # Basic schema inference
         return {
             'probable_record_types': self._detect_patterns(root)['likely_records'],
             'hierarchical': self._calculate_depth(root) > 3
         }
     
-    def _calculate_depth(self, elem: ET.Element, depth: int = 0) -> int:
+    def _calculate_depth(self, elem: Element, depth: int = 0) -> int:
         if not list(elem):
             return depth
         return max(self._calculate_depth(child, depth + 1) for child in elem)
     
-    def _get_unique_paths(self, root: ET.Element) -> set:
+    def _get_unique_paths(self, root: Element) -> set:
         paths = set()
         
         def traverse(elem, path):
@@ -148,11 +155,11 @@ class GenericXMLHandler(XMLHandler):
         traverse(root, "")
         return paths
     
-    def _get_path(self, elem: ET.Element) -> str:
+    def _get_path(self, elem: Element) -> str:
         # Simple path extraction (would need more complex logic for full path)
         return elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
     
-    def _analyze_quality(self, root: ET.Element) -> Dict[str, float]:
+    def _analyze_quality(self, root: Element) -> Dict[str, float]:
         total_elements = len(list(root.iter()))
         elements_with_text = sum(1 for e in root.iter() if e.text and e.text.strip())
         elements_with_attrs = sum(1 for e in root.iter() if e.attrib)

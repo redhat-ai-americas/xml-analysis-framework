@@ -8,11 +8,18 @@ dependencies, plugins, and build configurations for software composition
 analysis and security assessments.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -23,7 +30,7 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class MavenPOMHandler(XMLHandler):
     """Handler for Maven Project Object Model (POM) files"""
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check if root is 'project' and has Maven namespace
         if root.tag == 'project' or root.tag.endswith('}project'):
             if 'maven.apache.org' in str(namespaces.values()):
@@ -33,7 +40,7 @@ class MavenPOMHandler(XMLHandler):
                 return True, 0.8
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         pom_version = root.find('.//modelVersion')
         version = pom_version.text if pom_version is not None else "4.0.0"
         
@@ -48,7 +55,7 @@ class MavenPOMHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'project_info': self._extract_project_info(root),
             'dependencies': self._analyze_dependencies(root),
@@ -88,7 +95,7 @@ class MavenPOMHandler(XMLHandler):
             quality_metrics=self._calculate_pom_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'coordinates': {
                 'groupId': getattr(root.find('.//groupId'), 'text', None),
@@ -100,7 +107,7 @@ class MavenPOMHandler(XMLHandler):
             'build_config': self._extract_build_config(root)
         }
     
-    def _extract_project_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_project_info(self, root: Element) -> Dict[str, Any]:
         return {
             'name': getattr(root.find('.//name'), 'text', None),
             'description': getattr(root.find('.//description'), 'text', None),
@@ -108,7 +115,7 @@ class MavenPOMHandler(XMLHandler):
             'parent': self._extract_parent_info(root)
         }
     
-    def _analyze_dependencies(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_dependencies(self, root: Element) -> Dict[str, Any]:
         deps = root.findall('.//dependency')
         
         scopes = {}
@@ -123,7 +130,7 @@ class MavenPOMHandler(XMLHandler):
             'management': len(root.findall('.//dependencyManagement//dependency'))
         }
     
-    def _analyze_plugins(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _analyze_plugins(self, root: Element) -> List[Dict[str, str]]:
         plugins = []
         for plugin in root.findall('.//plugin'):
             plugins.append({
@@ -133,7 +140,7 @@ class MavenPOMHandler(XMLHandler):
             })
         return plugins
     
-    def _extract_repositories(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_repositories(self, root: Element) -> List[Dict[str, str]]:
         repos = []
         for repo in root.findall('.//repository'):
             repos.append({
@@ -142,7 +149,7 @@ class MavenPOMHandler(XMLHandler):
             })
         return repos
     
-    def _extract_properties(self, root: ET.Element) -> Dict[str, str]:
+    def _extract_properties(self, root: Element) -> Dict[str, str]:
         props = {}
         properties = root.find('.//properties')
         if properties is not None:
@@ -150,7 +157,7 @@ class MavenPOMHandler(XMLHandler):
                 props[prop.tag] = prop.text
         return props
     
-    def _extract_parent_info(self, root: ET.Element) -> Optional[Dict[str, str]]:
+    def _extract_parent_info(self, root: Element) -> Optional[Dict[str, str]]:
         parent = root.find('.//parent')
         if parent is None:
             return None
@@ -160,7 +167,7 @@ class MavenPOMHandler(XMLHandler):
             'version': getattr(parent.find('.//version'), 'text', None)
         }
     
-    def _extract_dependency(self, dep: ET.Element) -> Dict[str, str]:
+    def _extract_dependency(self, dep: Element) -> Dict[str, str]:
         return {
             'groupId': getattr(dep.find('.//groupId'), 'text', None),
             'artifactId': getattr(dep.find('.//artifactId'), 'text', None),
@@ -168,10 +175,10 @@ class MavenPOMHandler(XMLHandler):
             'scope': getattr(dep.find('.//scope'), 'text', 'compile')
         }
     
-    def _extract_dependency_list(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_dependency_list(self, root: Element) -> List[Dict[str, str]]:
         return [self._extract_dependency(d) for d in root.findall('.//dependency')[:20]]
     
-    def _extract_build_config(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_build_config(self, root: Element) -> Dict[str, Any]:
         build = root.find('.//build')
         if build is None:
             return {}

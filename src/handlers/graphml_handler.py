@@ -7,12 +7,19 @@ and their associated data. Extracts nodes, edges, graph structure, attributes,
 and performs network analysis for visualization and graph algorithms.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
 import math
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -29,13 +36,13 @@ class GraphMLHandler(XMLHandler):
         "graphdrawing.org/xmlns"
     ]
     
-    def _get_namespace(self, root: ET.Element) -> str:
+    def _get_namespace(self, root: Element) -> str:
         """Extract namespace prefix from root element"""
         if '}' in root.tag:
             return root.tag.split('}')[0] + '}'
         return ''
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for GraphML namespace
         for uri in namespaces.values():
             if any(ns in uri for ns in self.GRAPHML_NAMESPACES):
@@ -67,7 +74,7 @@ class GraphMLHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Detect GraphML version
         version = "1.0"  # Default
         if 'version' in root.attrib:
@@ -130,7 +137,7 @@ class GraphMLHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'file_info': self._analyze_file_info(root),
             'graph_structure': self._analyze_graph_structure(root),
@@ -185,7 +192,7 @@ class GraphMLHandler(XMLHandler):
             quality_metrics=self._assess_graph_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'graph_metadata': self._extract_graph_metadata(root),
             'node_catalog': self._extract_node_catalog(root),
@@ -194,7 +201,7 @@ class GraphMLHandler(XMLHandler):
             'network_statistics': self._extract_network_statistics(root)
         }
     
-    def _analyze_file_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_file_info(self, root: Element) -> Dict[str, Any]:
         """Analyze GraphML file information"""
         file_info = {
             'root_element': root.tag,
@@ -221,7 +228,7 @@ class GraphMLHandler(XMLHandler):
         
         return file_info
     
-    def _analyze_graph_structure(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_graph_structure(self, root: Element) -> Dict[str, Any]:
         """Analyze graph structure and properties"""
         ns = self._get_namespace(root)
         structure_info = {
@@ -258,7 +265,7 @@ class GraphMLHandler(XMLHandler):
         
         return structure_info
     
-    def _analyze_nodes(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_nodes(self, root: Element) -> Dict[str, Any]:
         """Analyze node information"""
         ns = self._get_namespace(root)
         node_info = {
@@ -310,7 +317,7 @@ class GraphMLHandler(XMLHandler):
         
         return node_info
     
-    def _analyze_edges(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_edges(self, root: Element) -> Dict[str, Any]:
         """Analyze edge information"""
         ns = self._get_namespace(root)
         edge_info = {
@@ -368,7 +375,7 @@ class GraphMLHandler(XMLHandler):
         
         return edge_info
     
-    def _analyze_attributes(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_attributes(self, root: Element) -> Dict[str, Any]:
         """Analyze attribute key definitions"""
         ns = self._get_namespace(root)
         attr_info = {
@@ -415,7 +422,7 @@ class GraphMLHandler(XMLHandler):
         
         return attr_info
     
-    def _analyze_data_properties(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_data_properties(self, root: Element) -> Dict[str, Any]:
         """Analyze data elements and their properties"""
         ns = self._get_namespace(root)
         data_info = {
@@ -465,7 +472,7 @@ class GraphMLHandler(XMLHandler):
         
         return data_info
     
-    def _analyze_layout_information(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_layout_information(self, root: Element) -> Dict[str, Any]:
         """Analyze layout and visual information"""
         layout_info = {
             'has_coordinates': False,
@@ -501,7 +508,7 @@ class GraphMLHandler(XMLHandler):
         
         return layout_info
     
-    def _analyze_connectivity(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_connectivity(self, root: Element) -> Dict[str, Any]:
         """Analyze graph connectivity patterns"""
         ns = self._get_namespace(root)
         connectivity_info = {
@@ -549,7 +556,7 @@ class GraphMLHandler(XMLHandler):
         
         return connectivity_info
     
-    def _calculate_network_metrics(self, root: ET.Element) -> Dict[str, Any]:
+    def _calculate_network_metrics(self, root: Element) -> Dict[str, Any]:
         """Calculate basic network metrics"""
         metrics = {
             'density': 0.0,
@@ -612,7 +619,7 @@ class GraphMLHandler(XMLHandler):
         
         return 'string'
     
-    def _extract_graph_metadata(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_graph_metadata(self, root: Element) -> Dict[str, Any]:
         """Extract high-level graph metadata"""
         metadata = {
             'file_version': root.get('version'),
@@ -626,7 +633,7 @@ class GraphMLHandler(XMLHandler):
         
         return metadata
     
-    def _extract_node_catalog(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_node_catalog(self, root: Element) -> List[Dict[str, Any]]:
         """Extract node catalog with attributes"""
         nodes = []
         
@@ -648,7 +655,7 @@ class GraphMLHandler(XMLHandler):
         
         return nodes
     
-    def _extract_edge_catalog(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_edge_catalog(self, root: Element) -> List[Dict[str, Any]]:
         """Extract edge catalog with attributes"""
         edges = []
         
@@ -672,7 +679,7 @@ class GraphMLHandler(XMLHandler):
         
         return edges
     
-    def _extract_attribute_schema(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_attribute_schema(self, root: Element) -> Dict[str, Any]:
         """Extract attribute schema information"""
         schema = {
             'node_attributes': {},
@@ -714,7 +721,7 @@ class GraphMLHandler(XMLHandler):
         
         return schema
     
-    def _extract_network_statistics(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_network_statistics(self, root: Element) -> Dict[str, Any]:
         """Extract network statistics"""
         stats = {
             'node_count': len(root.findall('.//node')),

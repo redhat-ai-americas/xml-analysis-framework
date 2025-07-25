@@ -6,10 +6,17 @@ Analyzes RSS and Atom feed documents for content syndication,
 news aggregation, and content distribution systems.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -20,14 +27,14 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class RSSHandler(XMLHandler):
     """Handler for RSS feed documents"""
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         if root.tag == 'rss' or root.tag.endswith('}rss'):
             return True, 1.0
         if root.tag == 'feed':  # Atom feeds
             return True, 0.9
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         version = root.get('version', '2.0')
         feed_type = 'RSS' if root.tag.endswith('rss') else 'Atom'
         
@@ -41,7 +48,7 @@ class RSSHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         channel = root.find('.//channel') or root
         items = root.findall('.//item') or root.findall('.//{http://www.w3.org/2005/Atom}entry')
         
@@ -76,7 +83,7 @@ class RSSHandler(XMLHandler):
             quality_metrics=self._calculate_feed_quality(root, items)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         items = root.findall('.//item') or root.findall('.//{http://www.w3.org/2005/Atom}entry')
         
         return {
@@ -92,7 +99,7 @@ class RSSHandler(XMLHandler):
                     categories.add(cat.text)
         return list(categories)
     
-    def _extract_feed_metadata(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_feed_metadata(self, root: Element) -> Dict[str, Any]:
         channel = root.find('.//channel') or root
         return {
             'title': getattr(channel.find('.//title'), 'text', None),
@@ -100,7 +107,7 @@ class RSSHandler(XMLHandler):
             'link': getattr(channel.find('.//link'), 'text', None)
         }
     
-    def _extract_item_data(self, item: ET.Element) -> Dict[str, Any]:
+    def _extract_item_data(self, item: Element) -> Dict[str, Any]:
         return {
             'title': getattr(item.find('.//title'), 'text', None),
             'description': getattr(item.find('.//description'), 'text', None),
@@ -108,7 +115,7 @@ class RSSHandler(XMLHandler):
             'link': getattr(item.find('.//link'), 'text', None)
         }
     
-    def _calculate_feed_quality(self, root: ET.Element, items: List[ET.Element]) -> Dict[str, float]:
+    def _calculate_feed_quality(self, root: Element, items: List[Element]) -> Dict[str, float]:
         total = len(items)
         if total == 0:
             return {"completeness": 0.0, "consistency": 0.0, "data_density": 0.0}

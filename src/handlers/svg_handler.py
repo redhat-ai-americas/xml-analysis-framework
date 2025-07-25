@@ -6,11 +6,18 @@ Analyzes SVG (Scalable Vector Graphics) documents for design pattern recognition
 accessibility analysis, style extraction, and vector graphic optimization.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -23,7 +30,7 @@ class SVGHandler(XMLHandler):
     
     SVG_NAMESPACE = "http://www.w3.org/2000/svg"
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for SVG root element
         if root.tag == f'{{{self.SVG_NAMESPACE}}}svg' or root.tag == 'svg':
             return True, 1.0
@@ -35,7 +42,7 @@ class SVGHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Determine SVG version
         version = root.get('version', '1.1')
         
@@ -59,7 +66,7 @@ class SVGHandler(XMLHandler):
             metadata=metadata
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'svg_info': {
                 'version': root.get('version', '1.1'),
@@ -118,7 +125,7 @@ class SVGHandler(XMLHandler):
             quality_metrics=self._assess_svg_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'svg_metadata': {
                 'version': root.get('version', '1.1'),
@@ -130,7 +137,7 @@ class SVGHandler(XMLHandler):
             'technical_summary': self._extract_technical_summary(root)
         }
     
-    def _detect_svg_type(self, root: ET.Element) -> str:
+    def _detect_svg_type(self, root: Element) -> str:
         """Detect the type/purpose of the SVG"""
         # Count different types of elements to infer purpose
         element_counts = self._count_svg_elements(root)
@@ -158,7 +165,7 @@ class SVGHandler(XMLHandler):
         
         return "Graphic"
     
-    def _extract_namespace_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_namespace_info(self, root: Element) -> Dict[str, Any]:
         """Extract namespace information"""
         namespaces = {}
         for key, value in root.attrib.items():
@@ -172,7 +179,7 @@ class SVGHandler(XMLHandler):
             'xlink_namespace': 'xlink' in namespaces
         }
     
-    def _analyze_dimensions(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_dimensions(self, root: Element) -> Dict[str, Any]:
         """Analyze SVG dimensions and viewport"""
         return {
             'width': root.get('width'),
@@ -184,7 +191,7 @@ class SVGHandler(XMLHandler):
             'viewport_info': self._parse_viewport(root)
         }
     
-    def _analyze_elements(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_elements(self, root: Element) -> Dict[str, Any]:
         """Analyze SVG elements structure"""
         element_info = {
             'total_elements': 0,
@@ -216,7 +223,7 @@ class SVGHandler(XMLHandler):
         
         return element_info
     
-    def _analyze_graphics_content(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_graphics_content(self, root: Element) -> Dict[str, Any]:
         """Analyze graphics content types"""
         graphics_info = {
             'graphic_elements': [],
@@ -278,7 +285,7 @@ class SVGHandler(XMLHandler):
         
         return graphics_info
     
-    def _analyze_styles(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_styles(self, root: Element) -> Dict[str, Any]:
         """Analyze styling approaches"""
         style_info = {
             'style_definitions': [],
@@ -335,7 +342,7 @@ class SVGHandler(XMLHandler):
         
         return style_info
     
-    def _analyze_accessibility(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_accessibility(self, root: Element) -> Dict[str, Any]:
         """Analyze accessibility features"""
         accessibility_info = {
             'has_title': False,
@@ -381,7 +388,7 @@ class SVGHandler(XMLHandler):
         
         return accessibility_info
     
-    def _analyze_animations(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_animations(self, root: Element) -> Dict[str, Any]:
         """Analyze SVG animations"""
         animation_info = {
             'has_animations': False,
@@ -414,7 +421,7 @@ class SVGHandler(XMLHandler):
         
         return animation_info
     
-    def _analyze_scripts(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_scripts(self, root: Element) -> Dict[str, Any]:
         """Analyze embedded scripts"""
         script_info = {
             'has_scripts': False,
@@ -442,7 +449,7 @@ class SVGHandler(XMLHandler):
         
         return script_info
     
-    def _analyze_optimization_opportunities(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_optimization_opportunities(self, root: Element) -> Dict[str, Any]:
         """Analyze optimization opportunities"""
         optimization_info = {
             'unused_definitions': 0,
@@ -486,7 +493,7 @@ class SVGHandler(XMLHandler):
         
         return optimization_info
     
-    def _analyze_security_aspects(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_security_aspects(self, root: Element) -> Dict[str, Any]:
         """Analyze security considerations"""
         security_info = {
             'security_risks': [],
@@ -514,7 +521,7 @@ class SVGHandler(XMLHandler):
         
         return security_info
     
-    def _check_animations(self, root: ET.Element) -> bool:
+    def _check_animations(self, root: Element) -> bool:
         """Check if SVG contains animations"""
         animation_tags = ['animate', 'animateTransform', 'animateMotion', 'set', 'animateColor']
         namespace = root.tag.split("}")[0][1:] if "}" in root.tag else ""
@@ -531,17 +538,17 @@ class SVGHandler(XMLHandler):
         
         return False
     
-    def _has_scripts(self, root: ET.Element) -> bool:
+    def _has_scripts(self, root: Element) -> bool:
         """Check if SVG contains scripts"""
         return len(root.findall('.//script')) > 0
     
-    def _check_accessibility(self, root: ET.Element) -> bool:
+    def _check_accessibility(self, root: Element) -> bool:
         """Check if SVG has basic accessibility features"""
         return (root.find('.//title') is not None or 
                 root.find('.//desc') is not None or
                 any(elem.get('aria-label') for elem in root.iter()))
     
-    def _count_svg_elements(self, root: ET.Element) -> Dict[str, int]:
+    def _count_svg_elements(self, root: Element) -> Dict[str, int]:
         """Count SVG elements by type"""
         elements = {}
         for elem in root.iter():
@@ -549,7 +556,7 @@ class SVGHandler(XMLHandler):
             elements[tag] = elements.get(tag, 0) + 1
         return elements
     
-    def _parse_viewport(self, root: ET.Element) -> Dict[str, Any]:
+    def _parse_viewport(self, root: Element) -> Dict[str, Any]:
         """Parse viewport information"""
         viewbox = root.get('viewBox')
         if viewbox:
@@ -563,7 +570,7 @@ class SVGHandler(XMLHandler):
                 }
         return {}
     
-    def _analyze_group_structure(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _analyze_group_structure(self, root: Element) -> List[Dict[str, Any]]:
         """Analyze group structure for organization"""
         groups = []
         for group in root.findall('.//g'):
@@ -576,13 +583,13 @@ class SVGHandler(XMLHandler):
             groups.append(group_info)
         return groups
     
-    def _calculate_max_depth(self, elem: ET.Element, depth: int = 0) -> int:
+    def _calculate_max_depth(self, elem: Element, depth: int = 0) -> int:
         """Calculate maximum depth of element tree"""
         if not list(elem):
             return depth
         return max(self._calculate_max_depth(child, depth + 1) for child in elem)
     
-    def _extract_dimension_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_dimension_summary(self, root: Element) -> Dict[str, Any]:
         """Extract dimension summary"""
         return {
             'width': root.get('width'),
@@ -591,7 +598,7 @@ class SVGHandler(XMLHandler):
             'responsive': root.get('viewBox') is not None and root.get('width') is None
         }
     
-    def _extract_design_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_design_summary(self, root: Element) -> Dict[str, Any]:
         """Extract design summary"""
         elements = self._count_svg_elements(root)
         return {
@@ -601,7 +608,7 @@ class SVGHandler(XMLHandler):
             'has_images': elements.get('image', 0) > 0
         }
     
-    def _extract_accessibility_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_accessibility_summary(self, root: Element) -> Dict[str, Any]:
         """Extract accessibility summary"""
         return {
             'has_title': root.find('.//title') is not None,
@@ -609,7 +616,7 @@ class SVGHandler(XMLHandler):
             'aria_attributes': sum(1 for elem in root.iter() if elem.get('aria-label'))
         }
     
-    def _extract_technical_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_technical_summary(self, root: Element) -> Dict[str, Any]:
         """Extract technical summary"""
         return {
             'version': root.get('version', '1.1'),

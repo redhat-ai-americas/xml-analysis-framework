@@ -32,4 +32,4 @@ python examples/quick_test.py
 
 ## Requirements
 
-All examples use only Python standard library (3.7+) with no external dependencies.
+All examples use only Python standard library (3.8+) and defusedxml for secure parsing.

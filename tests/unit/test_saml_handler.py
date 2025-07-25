@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from handlers.saml_handler import SAMLHandler
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 
 def test_saml_handler():
     """Test SAML handler with synthetic test files"""

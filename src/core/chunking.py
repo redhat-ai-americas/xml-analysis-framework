@@ -6,12 +6,19 @@ This module provides intelligent chunking strategies for XML documents
 to prepare them for LLM processing while preserving context and structure.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import List, Dict, Any, Optional, Generator, Tuple
 from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 @dataclass
 class ChunkingConfig:
@@ -39,8 +46,16 @@ class XMLChunk:
 class XMLChunkingStrategy:
     """Base class for different chunking strategies"""
     
-    def __init__(self, config: ChunkingConfig = None):
+    def __init__(self, config: ChunkingConfig = None, max_file_size_mb: Optional[float] = None):
+        """
+        Initialize the chunking strategy
+        
+        Args:
+            config: Chunking configuration
+            max_file_size_mb: Maximum allowed file size in megabytes
+        """
         self.config = config or ChunkingConfig()
+        self.max_file_size_mb = max_file_size_mb
         
     def estimate_tokens(self, text: str) -> int:
         """Rough estimation of tokens (words * 1.3)"""
@@ -54,6 +69,17 @@ class XMLChunkingStrategy:
     def chunk_document(self, file_path: str, 
                       specialized_analysis: Dict[str, Any] = None) -> List[XMLChunk]:
         """Chunk an XML document based on the strategy"""
+        # Check file size limits if specified
+        if self.max_file_size_mb is not None:
+            try:
+                file_size_bytes = Path(file_path).stat().st_size
+                file_size_mb = file_size_bytes / (1024 * 1024)
+                
+                if file_size_mb > self.max_file_size_mb:
+                    raise ValueError(f"File too large: {file_size_mb:.2f}MB exceeds limit of {self.max_file_size_mb}MB")
+            except OSError as e:
+                raise OSError(f"Failed to check file size: {e}")
+        
         raise NotImplementedError
 
 class HierarchicalChunking(XMLChunkingStrategy):
@@ -61,6 +87,9 @@ class HierarchicalChunking(XMLChunkingStrategy):
     
     def chunk_document(self, file_path: str, 
                       specialized_analysis: Dict[str, Any] = None) -> List[XMLChunk]:
+        # Check file size limits (calls parent method)
+        super().chunk_document(file_path, specialized_analysis)
+        
         chunks = []
         tree = ET.parse(file_path)
         root = tree.getroot()
@@ -79,7 +108,7 @@ class HierarchicalChunking(XMLChunkingStrategy):
             
         return chunks
     
-    def _chunk_element(self, element: ET.Element, path: str, 
+    def _chunk_element(self, element: Element, path: str, 
                        start_index: int) -> Generator[XMLChunk, None, None]:
         """Recursively chunk an element and its children"""
         current_path = f"{path}/{element.tag}" if path else element.tag
@@ -110,7 +139,7 @@ class HierarchicalChunking(XMLChunkingStrategy):
             # Not a boundary, continue processing children
             yield from self._process_children(element, current_path, start_index)
     
-    def _is_semantic_boundary(self, element: ET.Element) -> bool:
+    def _is_semantic_boundary(self, element: Element) -> bool:
         """Check if element is a natural chunking boundary"""
         if not self.config.semantic_boundaries:
             return False
@@ -118,7 +147,7 @@ class HierarchicalChunking(XMLChunkingStrategy):
         tag = element.tag.split('}')[-1] if '}' in element.tag else element.tag
         return tag in self.config.semantic_boundaries
     
-    def _create_chunk(self, element: ET.Element, path: str, 
+    def _create_chunk(self, element: Element, path: str, 
                      index: int, content: str = None) -> XMLChunk:
         """Create a chunk from an element"""
         if content is None:
@@ -154,7 +183,7 @@ class HierarchicalChunking(XMLChunkingStrategy):
             elements_included=elements_included
         )
     
-    def _split_large_element(self, element: ET.Element, path: str, 
+    def _split_large_element(self, element: Element, path: str, 
                             start_index: int) -> Generator[XMLChunk, None, None]:
         """Split a large element into multiple chunks"""
         # Strategy: Group children until size limit reached
@@ -184,18 +213,18 @@ class HierarchicalChunking(XMLChunkingStrategy):
                 current_chunk_elements, element, path, chunk_index
             )
     
-    def _create_chunk_from_elements(self, elements: List[ET.Element], 
-                                   parent: ET.Element, path: str, 
+    def _create_chunk_from_elements(self, elements: List[Element], 
+                                   parent: Element, path: str, 
                                    index: int) -> XMLChunk:
         """Create a chunk from a list of elements"""
         # Create a wrapper element
-        wrapper = ET.Element(parent.tag, parent.attrib)
+        wrapper = Element(parent.tag, parent.attrib)
         for elem in elements:
             wrapper.append(elem)
             
         return self._create_chunk(wrapper, path, index)
     
-    def _process_children(self, element: ET.Element, path: str, 
+    def _process_children(self, element: Element, path: str, 
                          start_index: int) -> Generator[XMLChunk, None, None]:
         """Process children of a non-boundary element"""
         chunk_index = start_index
@@ -204,7 +233,7 @@ class HierarchicalChunking(XMLChunkingStrategy):
                 yield chunk
                 chunk_index += 1
     
-    def _get_parent_context(self, element: ET.Element) -> str:
+    def _get_parent_context(self, element: Element) -> str:
         """Get context from parent elements"""
         # This would need access to parent in real implementation
         return f"Parent: {element.tag}"
@@ -232,6 +261,9 @@ class SlidingWindowChunking(XMLChunkingStrategy):
     
     def chunk_document(self, file_path: str, 
                       specialized_analysis: Dict[str, Any] = None) -> List[XMLChunk]:
+        # Check file size limits (calls parent method)
+        super().chunk_document(file_path, specialized_analysis)
+        
         chunks = []
         
         # Read and parse the document
@@ -290,7 +322,7 @@ class SlidingWindowChunking(XMLChunkingStrategy):
         
         return chunks
     
-    def _flatten_elements(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _flatten_elements(self, root: Element) -> List[Dict[str, Any]]:
         """Flatten XML tree into a list of elements with metadata"""
         flattened = []
         
@@ -349,8 +381,8 @@ class SlidingWindowChunking(XMLChunkingStrategy):
 class ContentAwareChunking(XMLChunkingStrategy):
     """Chunks based on content type and meaning"""
     
-    def __init__(self, config: ChunkingConfig = None):
-        super().__init__(config)
+    def __init__(self, config: ChunkingConfig = None, max_file_size_mb: Optional[float] = None):
+        super().__init__(config, max_file_size_mb)
         self.content_patterns = {
             'narrative': ['para', 'p', 'description', 'abstract', 'summary'],
             'structured': ['table', 'list', 'itemizedlist', 'orderedlist'],
@@ -360,6 +392,9 @@ class ContentAwareChunking(XMLChunkingStrategy):
     
     def chunk_document(self, file_path: str, 
                       specialized_analysis: Dict[str, Any] = None) -> List[XMLChunk]:
+        # Check file size limits (calls parent method)
+        super().chunk_document(file_path, specialized_analysis)
+        
         chunks = []
         tree = ET.parse(file_path)
         root = tree.getroot()
@@ -376,7 +411,7 @@ class ContentAwareChunking(XMLChunkingStrategy):
         
         return chunks
     
-    def _group_by_content_type(self, root: ET.Element) -> Dict[str, List[ET.Element]]:
+    def _group_by_content_type(self, root: Element) -> Dict[str, List[Element]]:
         """Group elements by their content type"""
         groups = {
             'narrative': [],
@@ -392,7 +427,7 @@ class ContentAwareChunking(XMLChunkingStrategy):
         
         return {k: v for k, v in groups.items() if v}  # Remove empty groups
     
-    def _determine_content_type(self, element: ET.Element) -> str:
+    def _determine_content_type(self, element: Element) -> str:
         """Determine the content type of an element"""
         tag = element.tag.split('}')[-1] if '}' in element.tag else element.tag
         
@@ -412,7 +447,7 @@ class ContentAwareChunking(XMLChunkingStrategy):
         
         return 'other'
     
-    def _chunk_content_group(self, content_type: str, elements: List[ET.Element], 
+    def _chunk_content_group(self, content_type: str, elements: List[Element], 
                            start_index: int) -> Generator[XMLChunk, None, None]:
         """Create chunks for a group of similar content"""
         # Use different strategies based on content type
@@ -425,7 +460,7 @@ class ContentAwareChunking(XMLChunkingStrategy):
         else:
             yield from self._chunk_generic(elements, start_index)
     
-    def _chunk_narrative(self, elements: List[ET.Element], 
+    def _chunk_narrative(self, elements: List[Element], 
                         start_index: int) -> Generator[XMLChunk, None, None]:
         """Chunk narrative content, trying to keep paragraphs together"""
         current_content = []
@@ -452,7 +487,7 @@ class ContentAwareChunking(XMLChunkingStrategy):
         if current_content:
             yield self._create_narrative_chunk(current_content, chunk_index)
     
-    def _chunk_code(self, elements: List[ET.Element], 
+    def _chunk_code(self, elements: List[Element], 
                    start_index: int) -> Generator[XMLChunk, None, None]:
         """Chunk code content, trying to keep code blocks intact"""
         for i, elem in enumerate(elements):
@@ -476,7 +511,7 @@ class ContentAwareChunking(XMLChunkingStrategy):
                 # Split large code block
                 yield from self._split_large_code_block(elem, start_index + i)
     
-    def _chunk_structured(self, elements: List[ET.Element], 
+    def _chunk_structured(self, elements: List[Element], 
                          start_index: int) -> Generator[XMLChunk, None, None]:
         """Chunk structured content like tables and lists"""
         for i, elem in enumerate(elements):
@@ -494,7 +529,7 @@ class ContentAwareChunking(XMLChunkingStrategy):
                 elements_included=[elem.tag]
             )
     
-    def _chunk_generic(self, elements: List[ET.Element], 
+    def _chunk_generic(self, elements: List[Element], 
                       start_index: int) -> Generator[XMLChunk, None, None]:
         """Generic chunking for other content"""
         for i, elem in enumerate(elements):
@@ -542,7 +577,7 @@ class ContentAwareChunking(XMLChunkingStrategy):
         
         return overlap_elements
     
-    def _split_large_code_block(self, elem: ET.Element, 
+    def _split_large_code_block(self, elem: Element, 
                                index: int) -> Generator[XMLChunk, None, None]:
         """Split a large code block into smaller chunks"""
         # This is a simplified version - real implementation would be smarter
@@ -601,7 +636,7 @@ class ContentAwareChunking(XMLChunkingStrategy):
                 elements_included=['code']
             )
     
-    def _get_element_path(self, elem: ET.Element) -> str:
+    def _get_element_path(self, elem: Element) -> str:
         """Get a simple path representation for an element"""
         # In real implementation, would track actual path
         return elem.tag
@@ -609,7 +644,16 @@ class ContentAwareChunking(XMLChunkingStrategy):
 class ChunkingOrchestrator:
     """Orchestrates the chunking process using appropriate strategies"""
     
-    def __init__(self):
+    def __init__(self, max_file_size_mb: Optional[float] = None):
+        """
+        Initialize the chunking orchestrator
+        
+        Args:
+            max_file_size_mb: Maximum allowed file size in megabytes.
+                            If None, no size limit is enforced.
+                            Recommended: 100MB for production use.
+        """
+        self.max_file_size_mb = max_file_size_mb
         self.strategies = {
             'hierarchical': HierarchicalChunking,
             'sliding_window': SlidingWindowChunking,
@@ -622,6 +666,17 @@ class ChunkingOrchestrator:
                       config: ChunkingConfig = None) -> List[XMLChunk]:
         """Chunk a document using the appropriate strategy"""
         
+        # Check file size limits
+        if self.max_file_size_mb is not None:
+            try:
+                file_size_bytes = Path(file_path).stat().st_size
+                file_size_mb = file_size_bytes / (1024 * 1024)
+                
+                if file_size_mb > self.max_file_size_mb:
+                    raise ValueError(f"File too large: {file_size_mb:.2f}MB exceeds limit of {self.max_file_size_mb}MB")
+            except OSError as e:
+                raise OSError(f"Failed to check file size: {e}")
+        
         if strategy == 'auto':
             strategy = self._select_strategy(specialized_analysis)
         
@@ -630,7 +685,7 @@ class ChunkingOrchestrator:
         
         # Create strategy instance
         strategy_class = self.strategies[strategy]
-        chunker = strategy_class(config)
+        chunker = strategy_class(config, self.max_file_size_mb)
         
         # Apply document-specific configuration
         if config is None:

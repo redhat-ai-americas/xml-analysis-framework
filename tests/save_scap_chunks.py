@@ -6,7 +6,7 @@ Save SCAP document chunks with full content for examination
 import sys
 import os
 import json
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from datetime import datetime
 
 # Add src to path  

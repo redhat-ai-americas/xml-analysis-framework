@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from handlers.soap_envelope_handler import SOAPEnvelopeHandler
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 
 def test_soap_handler():
     """Test SOAP handler with synthetic test files"""

@@ -7,12 +7,19 @@ Supports GPX 1.0 and 1.1 formats with comprehensive track analysis,
 elevation profiling, and fitness metrics calculation.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import math
 import sys
 import os
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -26,13 +33,13 @@ class GPXHandler(XMLHandler):
     GPX_NAMESPACE_10 = "http://www.topografix.com/GPX/1/0"
     GPX_NAMESPACE_11 = "http://www.topografix.com/GPX/1/1"
     
-    def _get_namespace(self, root: ET.Element) -> str:
+    def _get_namespace(self, root: Element) -> str:
         """Extract namespace prefix from root element"""
         if '}' in root.tag:
             return root.tag.split('}')[0] + '}'
         return ''
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for GPX namespace
         if any('topografix.com/GPX' in uri for uri in namespaces.values()):
             return True, 1.0
@@ -49,7 +56,7 @@ class GPXHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Detect GPX version
         version = root.get('version', '1.1')
         
@@ -80,7 +87,7 @@ class GPXHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'metadata': self._analyze_metadata(root),
             'waypoints': self._analyze_waypoints(root),
@@ -132,7 +139,7 @@ class GPXHandler(XMLHandler):
             quality_metrics=self._assess_data_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'track_data': self._extract_track_coordinates(root),
             'waypoint_data': self._extract_waypoint_data(root),
@@ -141,7 +148,7 @@ class GPXHandler(XMLHandler):
             'device_info': self._extract_device_info(root)
         }
     
-    def _analyze_metadata(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_metadata(self, root: Element) -> Dict[str, Any]:
         """Analyze GPX metadata"""
         ns = self._get_namespace(root)
         metadata = {}
@@ -178,7 +185,7 @@ class GPXHandler(XMLHandler):
         
         return metadata
     
-    def _analyze_waypoints(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_waypoints(self, root: Element) -> Dict[str, Any]:
         """Analyze waypoints"""
         ns = self._get_namespace(root)
         waypoints = {
@@ -220,7 +227,7 @@ class GPXHandler(XMLHandler):
         
         return waypoints
     
-    def _analyze_routes(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_routes(self, root: Element) -> Dict[str, Any]:
         """Analyze planned routes"""
         ns = self._get_namespace(root)
         routes = {
@@ -258,7 +265,7 @@ class GPXHandler(XMLHandler):
         routes['count'] = len(routes['routes'])
         return routes
     
-    def _analyze_tracks(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_tracks(self, root: Element) -> Dict[str, Any]:
         """Analyze GPS tracks"""
         ns = self._get_namespace(root)
         tracks = {
@@ -312,7 +319,7 @@ class GPXHandler(XMLHandler):
         tracks['count'] = len(tracks['tracks'])
         return tracks
     
-    def _calculate_statistics(self, root: ET.Element) -> Dict[str, Any]:
+    def _calculate_statistics(self, root: Element) -> Dict[str, Any]:
         """Calculate comprehensive GPS statistics"""
         ns = self._get_namespace(root)
         stats = {
@@ -373,7 +380,7 @@ class GPXHandler(XMLHandler):
         
         return stats
     
-    def _analyze_elevation(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_elevation(self, root: Element) -> Dict[str, Any]:
         """Analyze elevation profile"""
         ns = self._get_namespace(root)
         elevation_data = {
@@ -454,7 +461,7 @@ class GPXHandler(XMLHandler):
         
         return elevation_data
     
-    def _analyze_temporal_data(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_temporal_data(self, root: Element) -> Dict[str, Any]:
         """Analyze temporal aspects of GPS data"""
         ns = self._get_namespace(root)
         temporal = {
@@ -505,7 +512,7 @@ class GPXHandler(XMLHandler):
         
         return temporal
     
-    def _calculate_bounds(self, root: ET.Element) -> Dict[str, float]:
+    def _calculate_bounds(self, root: Element) -> Dict[str, float]:
         """Calculate geographic bounds"""
         ns = self._get_namespace(root)
         bounds = {
@@ -534,7 +541,7 @@ class GPXHandler(XMLHandler):
         
         return bounds
     
-    def _extract_track_coordinates(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_track_coordinates(self, root: Element) -> List[Dict[str, Any]]:
         """Extract track coordinates for analysis"""
         ns = self._get_namespace(root)
         tracks = []
@@ -564,7 +571,7 @@ class GPXHandler(XMLHandler):
         
         return tracks
     
-    def _extract_waypoint_data(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_waypoint_data(self, root: Element) -> List[Dict[str, Any]]:
         """Extract waypoint data"""
         ns = self._get_namespace(root)
         waypoints = []
@@ -583,7 +590,7 @@ class GPXHandler(XMLHandler):
         
         return waypoints
     
-    def _extract_route_data(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_route_data(self, root: Element) -> List[Dict[str, Any]]:
         """Extract route data"""
         ns = self._get_namespace(root)
         routes = []
@@ -608,7 +615,7 @@ class GPXHandler(XMLHandler):
         
         return routes
     
-    def _extract_activity_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_activity_summary(self, root: Element) -> Dict[str, Any]:
         """Extract activity summary"""
         metadata = self._analyze_metadata(root)
         stats = self._calculate_statistics(root)
@@ -623,7 +630,7 @@ class GPXHandler(XMLHandler):
             'creator': metadata.get('creator')
         }
     
-    def _extract_device_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_device_info(self, root: Element) -> Dict[str, Any]:
         """Extract device and software information"""
         return {
             'creator': root.get('creator'),
@@ -712,7 +719,7 @@ class GPXHandler(XMLHandler):
         return metrics
     
     # Utility methods
-    def _extract_author_info(self, metadata_elem: ET.Element, ns: str) -> Optional[Dict[str, str]]:
+    def _extract_author_info(self, metadata_elem: Element, ns: str) -> Optional[Dict[str, str]]:
         """Extract author information"""
         author_elem = metadata_elem.find(f'{ns}author')
         if author_elem is not None:
@@ -722,7 +729,7 @@ class GPXHandler(XMLHandler):
             }
         return None
     
-    def _extract_copyright_info(self, metadata_elem: ET.Element, ns: str) -> Optional[Dict[str, str]]:
+    def _extract_copyright_info(self, metadata_elem: Element, ns: str) -> Optional[Dict[str, str]]:
         """Extract copyright information"""
         copyright_elem = metadata_elem.find(f'{ns}copyright')
         if copyright_elem is not None:
@@ -733,7 +740,7 @@ class GPXHandler(XMLHandler):
             }
         return None
     
-    def _extract_link_info(self, metadata_elem: ET.Element, ns: str) -> Optional[Dict[str, str]]:
+    def _extract_link_info(self, metadata_elem: Element, ns: str) -> Optional[Dict[str, str]]:
         """Extract link information"""
         link_elem = metadata_elem.find(f'{ns}link')
         if link_elem is not None:
@@ -806,14 +813,14 @@ class GPXHandler(XMLHandler):
         
         return R * c
     
-    def _get_element_text(self, parent: ET.Element, path: str) -> Optional[str]:
+    def _get_element_text(self, parent: Element, path: str) -> Optional[str]:
         """Safely get element text"""
         elem = parent.find(path)
         if elem is not None and elem.text:
             return elem.text.strip()
         return None
     
-    def _get_element_float(self, parent: ET.Element, path: str) -> Optional[float]:
+    def _get_element_float(self, parent: Element, path: str) -> Optional[float]:
         """Safely get element as float"""
         text = self._get_element_text(parent, path)
         if text:
@@ -823,7 +830,7 @@ class GPXHandler(XMLHandler):
                 pass
         return None
     
-    def _get_element_int(self, parent: ET.Element, path: str) -> Optional[int]:
+    def _get_element_int(self, parent: Element, path: str) -> Optional[int]:
         """Safely get element as int"""
         text = self._get_element_text(parent, path)
         if text:

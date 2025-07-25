@@ -8,11 +8,18 @@ extraction of beans, profiles, property sources, and various Spring features
 like AOP, security, and transaction management.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -23,7 +30,7 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class SpringConfigHandler(XMLHandler):
     """Handler for Spring Framework XML configuration files"""
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for Spring namespaces
         spring_indicators = [
             'springframework.org/schema/beans',
@@ -40,7 +47,7 @@ class SpringConfigHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Detect Spring version from schema
         version = "5.x"  # Default
         for uri in namespaces.values():
@@ -60,7 +67,7 @@ class SpringConfigHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'beans': self._analyze_beans(root),
             'profiles': self._extract_profiles(root),
@@ -99,14 +106,14 @@ class SpringConfigHandler(XMLHandler):
             quality_metrics=self._assess_spring_config_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'bean_definitions': self._extract_bean_definitions(root),
             'component_scans': self._extract_component_scans(root),
             'configurations': self._extract_configurations(root)
         }
     
-    def _analyze_beans(self, root: ET.Element, namespaces: Dict[str, str] = None) -> Dict[str, Any]:
+    def _analyze_beans(self, root: Element, namespaces: Dict[str, str] = None) -> Dict[str, Any]:
         beans = []
         bean_classes = {}
         
@@ -133,7 +140,7 @@ class SpringConfigHandler(XMLHandler):
             'common_classes': {k: v for k, v in bean_classes.items() if v > 1}
         }
     
-    def _extract_profiles(self, root: ET.Element) -> List[str]:
+    def _extract_profiles(self, root: Element) -> List[str]:
         profiles = set()
         
         for elem in root.findall('.//*[@profile]'):
@@ -145,7 +152,7 @@ class SpringConfigHandler(XMLHandler):
         
         return list(profiles)
     
-    def _extract_imports(self, root: ET.Element) -> List[str]:
+    def _extract_imports(self, root: Element) -> List[str]:
         imports = []
         
         for imp in root.findall('.//import'):
@@ -155,7 +162,7 @@ class SpringConfigHandler(XMLHandler):
         
         return imports
     
-    def _extract_property_sources(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_property_sources(self, root: Element) -> List[Dict[str, str]]:
         sources = []
         
         # Look for property placeholder configurers
@@ -170,14 +177,14 @@ class SpringConfigHandler(XMLHandler):
         
         return sources
     
-    def _check_aop_usage(self, root: ET.Element) -> bool:
+    def _check_aop_usage(self, root: Element) -> bool:
         # Check for AOP namespace or AOP-related beans
         for elem in root.iter():
             if 'aop' in elem.tag or 'aspectj' in elem.tag.lower():
                 return True
         return False
     
-    def _check_security_config(self, root: ET.Element) -> Dict[str, Any]:
+    def _check_security_config(self, root: Element) -> Dict[str, Any]:
         security = {
             'present': False,
             'authentication': False,
@@ -194,11 +201,11 @@ class SpringConfigHandler(XMLHandler):
         
         return security
     
-    def _extract_bean_definitions(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_bean_definitions(self, root: Element) -> List[Dict[str, Any]]:
         # Simplified version - full implementation would extract all properties
         return self._analyze_beans(root)['all'][:20]  # First 20 beans
     
-    def _extract_component_scans(self, root: ET.Element) -> List[str]:
+    def _extract_component_scans(self, root: Element) -> List[str]:
         scans = []
         
         for scan in root.findall('.//*component-scan'):
@@ -208,20 +215,20 @@ class SpringConfigHandler(XMLHandler):
         
         return scans
     
-    def _extract_configurations(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_configurations(self, root: Element) -> Dict[str, Any]:
         return {
             'transaction_management': self._check_transaction_config(root),
             'caching': self._check_cache_config(root),
             'scheduling': self._check_scheduling_config(root)
         }
     
-    def _check_transaction_config(self, root: ET.Element) -> bool:
+    def _check_transaction_config(self, root: Element) -> bool:
         return any('transaction' in elem.tag for elem in root.iter())
     
-    def _check_cache_config(self, root: ET.Element) -> bool:
+    def _check_cache_config(self, root: Element) -> bool:
         return any('cache' in elem.tag for elem in root.iter())
     
-    def _check_scheduling_config(self, root: ET.Element) -> bool:
+    def _check_scheduling_config(self, root: Element) -> bool:
         return any('task' in elem.tag or 'scheduling' in elem.tag for elem in root.iter())
     
     def _count_by_attribute(self, items: List[Dict], attr: str) -> Dict[str, int]:

@@ -7,11 +7,18 @@ Extracts action mappings, form beans, controller configuration, data sources,
 message resources, and plugin definitions for enterprise Java web applications.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -29,7 +36,7 @@ class StrutsConfigHandler(XMLHandler):
         "jakarta.apache.org/struts/dtds"
     ]
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for Struts namespace or DTD references
         for uri in namespaces.values():
             if any(pattern in uri.lower() for pattern in self.STRUTS_DTD_PATTERNS):
@@ -63,7 +70,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Detect Struts version
         version = "1.x"  # Default
         
@@ -114,7 +121,7 @@ class StrutsConfigHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'configuration_info': self._analyze_configuration(root),
             'action_mappings': self._analyze_action_mappings(root),
@@ -172,7 +179,7 @@ class StrutsConfigHandler(XMLHandler):
             quality_metrics=self._assess_configuration_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'application_structure': self._extract_application_structure(root),
             'action_catalog': self._extract_action_catalog(root),
@@ -181,7 +188,7 @@ class StrutsConfigHandler(XMLHandler):
             'resource_configuration': self._extract_resource_config(root)
         }
     
-    def _analyze_configuration(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_configuration(self, root: Element) -> Dict[str, Any]:
         """Analyze overall configuration structure"""
         config_info = {
             'root_element': root.tag,
@@ -215,7 +222,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return config_info
     
-    def _analyze_action_mappings(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_action_mappings(self, root: Element) -> Dict[str, Any]:
         """Analyze action mappings"""
         action_info = {
             'action_count': 0,
@@ -286,7 +293,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return action_info
     
-    def _analyze_form_beans(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_form_beans(self, root: Element) -> Dict[str, Any]:
         """Analyze form bean definitions"""
         form_info = {
             'bean_count': 0,
@@ -330,7 +337,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return form_info
     
-    def _analyze_global_forwards(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_global_forwards(self, root: Element) -> Dict[str, Any]:
         """Analyze global forward definitions"""
         forward_info = {
             'forward_count': 0,
@@ -360,7 +367,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return forward_info
     
-    def _analyze_controller(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_controller(self, root: Element) -> Dict[str, Any]:
         """Analyze controller configuration"""
         controller_info = {
             'has_controller': False,
@@ -395,7 +402,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return controller_info
     
-    def _analyze_data_sources(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_data_sources(self, root: Element) -> Dict[str, Any]:
         """Analyze data source configurations"""
         ds_info = {
             'source_count': 0,
@@ -434,7 +441,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return ds_info
     
-    def _analyze_message_resources(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_message_resources(self, root: Element) -> Dict[str, Any]:
         """Analyze message resource configurations"""
         msg_info = {
             'resource_count': 0,
@@ -475,7 +482,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return msg_info
     
-    def _analyze_exception_config(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_exception_config(self, root: Element) -> Dict[str, Any]:
         """Analyze exception handling configuration"""
         exc_info = {
             'global_exceptions': 0,
@@ -511,7 +518,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return exc_info
     
-    def _analyze_plugins(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_plugins(self, root: Element) -> Dict[str, Any]:
         """Analyze plugin configurations"""
         plugin_info = {
             'plugin_count': 0,
@@ -553,7 +560,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return plugin_info
     
-    def _analyze_security_patterns(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_security_patterns(self, root: Element) -> Dict[str, Any]:
         """Analyze security-related patterns"""
         security_info = {
             'validation_enabled': 0,
@@ -603,7 +610,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return security_info
     
-    def _calculate_architecture_metrics(self, root: ET.Element) -> Dict[str, Any]:
+    def _calculate_architecture_metrics(self, root: Element) -> Dict[str, Any]:
         """Calculate architecture and complexity metrics"""
         metrics = {
             'complexity_score': 0.0,
@@ -664,7 +671,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return metrics
     
-    def _extract_application_structure(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_application_structure(self, root: Element) -> Dict[str, Any]:
         """Extract high-level application structure"""
         structure = {
             'configuration_sections': [],
@@ -698,7 +705,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return structure
     
-    def _extract_action_catalog(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_action_catalog(self, root: Element) -> List[Dict[str, Any]]:
         """Extract comprehensive action catalog"""
         actions = []
         
@@ -716,7 +723,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return actions
     
-    def _extract_form_definitions(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_form_definitions(self, root: Element) -> List[Dict[str, Any]]:
         """Extract form bean definitions"""
         forms = []
         
@@ -741,7 +748,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return forms
     
-    def _extract_navigation_flow(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_navigation_flow(self, root: Element) -> Dict[str, Any]:
         """Extract navigation flow information"""
         flow = {
             'global_forwards': [],
@@ -774,7 +781,7 @@ class StrutsConfigHandler(XMLHandler):
         
         return flow
     
-    def _extract_resource_config(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_resource_config(self, root: Element) -> Dict[str, Any]:
         """Extract resource configuration"""
         resources = {
             'data_sources': [],

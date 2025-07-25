@@ -7,7 +7,7 @@ containing incidents, problems, changes, and related data.
 """
 
 import unittest
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from pathlib import Path
 import sys
 import os

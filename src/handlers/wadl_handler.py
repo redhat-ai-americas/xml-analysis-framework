@@ -7,12 +7,19 @@ Extracts resource definitions, methods, parameters, response formats,
 and generates API documentation and analysis for REST services.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
 from urllib.parse import urljoin, urlparse
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -26,13 +33,13 @@ class WADLHandler(XMLHandler):
     WADL_NAMESPACE = "http://wadl.dev.java.net/2009/02"
     WADL_NAMESPACE_ALT = "http://research.sun.com/wadl/2006/10"
     
-    def _get_namespace(self, root: ET.Element) -> str:
+    def _get_namespace(self, root: Element) -> str:
         """Extract namespace prefix from root element"""
         if '}' in root.tag:
             return root.tag.split('}')[0] + '}'
         return ''
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for WADL namespace
         wadl_namespaces = [
             'wadl.dev.java.net',
@@ -55,7 +62,7 @@ class WADLHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Detect WADL version
         version = "1.0"  # Default
         for uri in namespaces.values():
@@ -94,7 +101,7 @@ class WADLHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'application_info': self._analyze_application(root),
             'resources': self._analyze_resources(root),
@@ -147,7 +154,7 @@ class WADLHandler(XMLHandler):
             quality_metrics=self._assess_api_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'api_specification': self._extract_api_spec(root),
             'endpoint_catalog': self._extract_endpoints(root),
@@ -156,7 +163,7 @@ class WADLHandler(XMLHandler):
             'error_responses': self._extract_error_responses(root)
         }
     
-    def _analyze_application(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_application(self, root: Element) -> Dict[str, Any]:
         """Analyze application-level information"""
         ns = self._get_namespace(root)
         app_info = {
@@ -185,7 +192,7 @@ class WADLHandler(XMLHandler):
         
         return app_info
     
-    def _analyze_resources(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_resources(self, root: Element) -> Dict[str, Any]:
         """Analyze resource definitions"""
         ns = self._get_namespace(root)
         resources_info = {
@@ -239,7 +246,7 @@ class WADLHandler(XMLHandler):
         
         return resources_info
     
-    def _analyze_methods(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_methods(self, root: Element) -> Dict[str, Any]:
         """Analyze HTTP methods"""
         ns = self._get_namespace(root)
         methods_info = {
@@ -307,7 +314,7 @@ class WADLHandler(XMLHandler):
         
         return methods_info
     
-    def _analyze_parameters(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_parameters(self, root: Element) -> Dict[str, Any]:
         """Analyze parameters"""
         ns = self._get_namespace(root)
         params_info = {
@@ -368,7 +375,7 @@ class WADLHandler(XMLHandler):
         
         return params_info
     
-    def _analyze_representations(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_representations(self, root: Element) -> Dict[str, Any]:
         """Analyze representation formats"""
         ns = self._get_namespace(root)
         repr_info = {
@@ -419,7 +426,7 @@ class WADLHandler(XMLHandler):
         
         return repr_info
     
-    def _analyze_grammars(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_grammars(self, root: Element) -> Dict[str, Any]:
         """Analyze grammar definitions"""
         ns = self._get_namespace(root)
         grammars_info = {
@@ -454,7 +461,7 @@ class WADLHandler(XMLHandler):
         
         return grammars_info
     
-    def _analyze_documentation(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_documentation(self, root: Element) -> Dict[str, Any]:
         """Analyze documentation coverage"""
         ns = self._get_namespace(root)
         doc_info = {
@@ -494,7 +501,7 @@ class WADLHandler(XMLHandler):
         
         return doc_info
     
-    def _analyze_security_patterns(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_security_patterns(self, root: Element) -> Dict[str, Any]:
         """Analyze security patterns and authentication"""
         security_info = {
             'has_authentication': False,
@@ -540,7 +547,7 @@ class WADLHandler(XMLHandler):
         
         return security_info
     
-    def _calculate_api_metrics(self, root: ET.Element) -> Dict[str, Any]:
+    def _calculate_api_metrics(self, root: Element) -> Dict[str, Any]:
         """Calculate API complexity and design metrics"""
         metrics = {
             'complexity_score': 0.0,
@@ -589,7 +596,7 @@ class WADLHandler(XMLHandler):
         
         return metrics
     
-    def _extract_api_spec(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_api_spec(self, root: Element) -> Dict[str, Any]:
         """Extract high-level API specification"""
         app_info = self._analyze_application(root)
         resources = self._analyze_resources(root)
@@ -606,7 +613,7 @@ class WADLHandler(XMLHandler):
             'base_paths': resources['base_paths'][:10]  # Limit for readability
         }
     
-    def _extract_endpoints(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_endpoints(self, root: Element) -> List[Dict[str, Any]]:
         """Extract API endpoints with methods"""
         endpoints = []
         ns = self._get_namespace(root)
@@ -664,7 +671,7 @@ class WADLHandler(XMLHandler):
         
         return endpoints
     
-    def _extract_data_models(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_data_models(self, root: Element) -> Dict[str, Any]:
         """Extract data models from grammars and representations"""
         models = {
             'schemas': [],
@@ -703,7 +710,7 @@ class WADLHandler(XMLHandler):
         
         return models
     
-    def _extract_auth_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_auth_info(self, root: Element) -> Dict[str, Any]:
         """Extract authentication information"""
         security = self._analyze_security_patterns(root)
         
@@ -715,7 +722,7 @@ class WADLHandler(XMLHandler):
             'security_headers': security['security_headers']
         }
     
-    def _extract_error_responses(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_error_responses(self, root: Element) -> List[Dict[str, Any]]:
         """Extract error response definitions"""
         errors = []
         ns = self._get_namespace(root)
@@ -811,7 +818,7 @@ class WADLHandler(XMLHandler):
         
         return metrics
     
-    def _calculate_max_resource_depth(self, root: ET.Element, ns: str, current_depth: int = 0) -> int:
+    def _calculate_max_resource_depth(self, root: Element, ns: str, current_depth: int = 0) -> int:
         """Calculate maximum resource nesting depth"""
         max_depth = current_depth
         

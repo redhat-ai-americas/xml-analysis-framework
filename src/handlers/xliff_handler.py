@@ -7,12 +7,19 @@ translation and localization workflows. Extracts translation units,
 states, metadata, and provides translation quality metrics and workflow insights.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -36,24 +43,24 @@ class XLIFFHandler(XMLHandler):
         "2.1": "urn:oasis:names:tc:xliff:document:2.1"
     }
     
-    def _get_namespace(self, root: ET.Element) -> str:
+    def _get_namespace(self, root: Element) -> str:
         """Extract namespace prefix from root element"""
         if '}' in root.tag:
             return root.tag.split('}')[0] + '}'
         return ''
     
-    def _find_elements_by_local_name(self, root: ET.Element, local_name: str) -> List[ET.Element]:
+    def _find_elements_by_local_name(self, root: Element, local_name: str) -> List[Element]:
         """Find elements by local name, ignoring namespace prefixes"""
         return [elem for elem in root.iter() if elem.tag.split('}')[-1] == local_name]
     
-    def _find_element_by_local_name(self, root: ET.Element, local_name: str) -> Optional[ET.Element]:
+    def _find_element_by_local_name(self, root: Element, local_name: str) -> Optional[Element]:
         """Find first element by local name, ignoring namespace prefixes"""
         for elem in root.iter():
             if elem.tag.split('}')[-1] == local_name:
                 return elem
         return None
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for XLIFF namespace
         for uri in namespaces.values():
             if any(xliff_ns in uri for xliff_ns in self.XLIFF_NAMESPACES):
@@ -88,7 +95,7 @@ class XLIFFHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Detect XLIFF version
         version = "1.2"  # Default
         
@@ -151,7 +158,7 @@ class XLIFFHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'file_info': self._analyze_file_info(root),
             'translation_files': self._analyze_translation_files(root),
@@ -208,7 +215,7 @@ class XLIFFHandler(XMLHandler):
             quality_metrics=self._assess_translation_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'translation_project': self._extract_project_metadata(root),
             'translation_catalog': self._extract_translation_catalog(root),
@@ -217,7 +224,7 @@ class XLIFFHandler(XMLHandler):
             'translation_statistics': self._extract_translation_statistics(root)
         }
     
-    def _analyze_file_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_file_info(self, root: Element) -> Dict[str, Any]:
         """Analyze XLIFF file information"""
         file_info = {
             'version': root.get('version', '1.2'),
@@ -244,7 +251,7 @@ class XLIFFHandler(XMLHandler):
         
         return file_info
     
-    def _analyze_translation_files(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_translation_files(self, root: Element) -> Dict[str, Any]:
         """Analyze translation file structure"""
         files_info = {
             'file_count': 0,
@@ -285,7 +292,7 @@ class XLIFFHandler(XMLHandler):
         
         return files_info
     
-    def _analyze_translation_units(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_translation_units(self, root: Element) -> Dict[str, Any]:
         """Analyze translation units"""
         units_info = {
             'unit_count': 0,
@@ -356,7 +363,7 @@ class XLIFFHandler(XMLHandler):
         
         return units_info
     
-    def _analyze_languages(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_languages(self, root: Element) -> Dict[str, Any]:
         """Analyze language information"""
         lang_info = {
             'source_language': None,
@@ -394,7 +401,7 @@ class XLIFFHandler(XMLHandler):
         
         return lang_info
     
-    def _analyze_workflow_state(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_workflow_state(self, root: Element) -> Dict[str, Any]:
         """Analyze translation workflow state"""
         workflow_info = {
             'total_units': 0,
@@ -441,7 +448,7 @@ class XLIFFHandler(XMLHandler):
         
         return workflow_info
     
-    def _analyze_translation_memory(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_translation_memory(self, root: Element) -> Dict[str, Any]:
         """Analyze translation memory information"""
         tm_info = {
             'has_tm_matches': False,
@@ -479,7 +486,7 @@ class XLIFFHandler(XMLHandler):
         
         return tm_info
     
-    def _analyze_notes_and_comments(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_notes_and_comments(self, root: Element) -> Dict[str, Any]:
         """Analyze notes and comments"""
         notes_info = {
             'note_count': 0,
@@ -520,7 +527,7 @@ class XLIFFHandler(XMLHandler):
         
         return notes_info
     
-    def _analyze_localization_metadata(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_localization_metadata(self, root: Element) -> Dict[str, Any]:
         """Analyze localization-specific metadata"""
         l10n_info = {
             'datatypes': set(),
@@ -572,7 +579,7 @@ class XLIFFHandler(XMLHandler):
         
         return l10n_info
     
-    def _analyze_tool_information(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_tool_information(self, root: Element) -> Dict[str, Any]:
         """Analyze translation tool information"""
         tool_info = {
             'primary_tool': None,
@@ -617,7 +624,7 @@ class XLIFFHandler(XMLHandler):
         
         return tool_info
     
-    def _calculate_quality_metrics(self, root: ET.Element) -> Dict[str, Any]:
+    def _calculate_quality_metrics(self, root: Element) -> Dict[str, Any]:
         """Calculate translation quality metrics"""
         metrics = {
             'completion_rate': 0.0,
@@ -691,7 +698,7 @@ class XLIFFHandler(XMLHandler):
         
         return metrics
     
-    def _extract_text_content(self, element: ET.Element) -> str:
+    def _extract_text_content(self, element: Element) -> str:
         """Extract text content from element, handling inline tags"""
         if element.text:
             text = element.text
@@ -705,7 +712,7 @@ class XLIFFHandler(XMLHandler):
         
         return text.strip()
     
-    def _extract_project_metadata(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_project_metadata(self, root: Element) -> Dict[str, Any]:
         """Extract project-level metadata"""
         metadata = {
             'version': root.get('version'),
@@ -730,7 +737,7 @@ class XLIFFHandler(XMLHandler):
         
         return metadata
     
-    def _extract_translation_catalog(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_translation_catalog(self, root: Element) -> List[Dict[str, Any]]:
         """Extract translation catalog"""
         catalog = []
         
@@ -751,7 +758,7 @@ class XLIFFHandler(XMLHandler):
         
         return catalog
     
-    def _extract_language_pairs(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_language_pairs(self, root: Element) -> List[Dict[str, Any]]:
         """Extract language pair information"""
         pairs = []
         
@@ -768,7 +775,7 @@ class XLIFFHandler(XMLHandler):
         
         return pairs
     
-    def _extract_workflow_status(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_workflow_status(self, root: Element) -> Dict[str, Any]:
         """Extract workflow status information"""
         status = {
             'overall_state': 'new',
@@ -809,7 +816,7 @@ class XLIFFHandler(XMLHandler):
         
         return status
     
-    def _extract_translation_statistics(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_translation_statistics(self, root: Element) -> Dict[str, Any]:
         """Extract translation statistics"""
         stats = {
             'total_words': 0,

@@ -6,11 +6,18 @@ Analyzes XML Schema files to extract type definitions, validation rules,
 and structural constraints for data quality and validation purposes.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -21,7 +28,7 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class XSDSchemaHandler(XMLHandler):
     """Handler for XML Schema Definition files"""
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for schema elements
         if root.tag.endswith('schema') or root.tag == 'schema':
             # Check for XSD namespace
@@ -31,7 +38,7 @@ class XSDSchemaHandler(XMLHandler):
             
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         target_namespace = root.get('targetNamespace', 'none')
         version = root.get('version', '1.0')
         
@@ -57,7 +64,7 @@ class XSDSchemaHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'types': self._analyze_types(root),
             'elements': self._analyze_elements(root),
@@ -104,7 +111,7 @@ class XSDSchemaHandler(XMLHandler):
             quality_metrics=self._assess_schema_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'type_definitions': self._extract_type_definitions(root),
             'element_definitions': self._extract_element_definitions(root),
@@ -118,7 +125,7 @@ class XSDSchemaHandler(XMLHandler):
             }
         }
     
-    def _analyze_types(self, root: ET.Element) -> Dict[str, List[Dict[str, Any]]]:
+    def _analyze_types(self, root: Element) -> Dict[str, List[Dict[str, Any]]]:
         complex_types = []
         simple_types = []
         
@@ -143,7 +150,7 @@ class XSDSchemaHandler(XMLHandler):
             
         return {'complex': complex_types, 'simple': simple_types}
     
-    def _analyze_elements(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_elements(self, root: Element) -> Dict[str, Any]:
         global_elements = []
         local_elements = []
         
@@ -167,7 +174,7 @@ class XSDSchemaHandler(XMLHandler):
             'total': len(all_elements)
         }
     
-    def _analyze_attributes(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_attributes(self, root: Element) -> Dict[str, Any]:
         global_attrs = []
         
         # Global attributes
@@ -188,7 +195,7 @@ class XSDSchemaHandler(XMLHandler):
             'total': len(root.findall('.//{http://www.w3.org/2001/XMLSchema}attribute'))
         }
     
-    def _extract_validation_rules(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_validation_rules(self, root: Element) -> List[Dict[str, Any]]:
         rules = []
         
         # Extract all restrictions
@@ -228,7 +235,7 @@ class XSDSchemaHandler(XMLHandler):
         
         return rules
     
-    def _analyze_namespaces(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_namespaces(self, root: Element) -> Dict[str, Any]:
         imports = []
         includes = []
         
@@ -249,7 +256,7 @@ class XSDSchemaHandler(XMLHandler):
             'includes': includes
         }
     
-    def _find_imports(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _find_imports(self, root: Element) -> List[Dict[str, str]]:
         imports = []
         
         for imp in root.findall('.//{http://www.w3.org/2001/XMLSchema}import'):
@@ -260,7 +267,7 @@ class XSDSchemaHandler(XMLHandler):
         
         return imports
     
-    def _calculate_complexity(self, root: ET.Element) -> Dict[str, Any]:
+    def _calculate_complexity(self, root: Element) -> Dict[str, Any]:
         # Count various elements to assess complexity
         metrics = {
             'total_types': len(root.findall('.//{http://www.w3.org/2001/XMLSchema}complexType')) + 
@@ -285,7 +292,7 @@ class XSDSchemaHandler(XMLHandler):
         
         return metrics
     
-    def _find_base_type(self, complex_type: ET.Element) -> Optional[str]:
+    def _find_base_type(self, complex_type: Element) -> Optional[str]:
         # Check for extension
         extension = complex_type.find('.//{http://www.w3.org/2001/XMLSchema}extension')
         if extension is not None:
@@ -298,7 +305,7 @@ class XSDSchemaHandler(XMLHandler):
         
         return None
     
-    def _find_restriction_base(self, simple_type: ET.Element) -> Optional[str]:
+    def _find_restriction_base(self, simple_type: Element) -> Optional[str]:
         restriction = simple_type.find('./{http://www.w3.org/2001/XMLSchema}restriction')
         if restriction is not None:
             return restriction.get('base')
@@ -315,7 +322,7 @@ class XSDSchemaHandler(XMLHandler):
         
         return None
     
-    def _extract_simple_constraints(self, simple_type: ET.Element) -> Dict[str, Any]:
+    def _extract_simple_constraints(self, simple_type: Element) -> Dict[str, Any]:
         constraints = {}
         restriction = simple_type.find('./{http://www.w3.org/2001/XMLSchema}restriction')
         
@@ -338,7 +345,7 @@ class XSDSchemaHandler(XMLHandler):
         
         return constraints
     
-    def _extract_type_definitions(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_type_definitions(self, root: Element) -> List[Dict[str, Any]]:
         # Return first 20 type definitions with details
         types = []
         
@@ -360,7 +367,7 @@ class XSDSchemaHandler(XMLHandler):
         
         return types
     
-    def _extract_element_definitions(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_element_definitions(self, root: Element) -> List[Dict[str, Any]]:
         # Return global element definitions
         elements = []
         
@@ -375,7 +382,7 @@ class XSDSchemaHandler(XMLHandler):
         
         return elements
     
-    def _extract_constraints(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_constraints(self, root: Element) -> List[Dict[str, Any]]:
         # Extract unique/key/keyref constraints
         constraints = []
         
@@ -389,7 +396,7 @@ class XSDSchemaHandler(XMLHandler):
         
         return constraints
     
-    def _extract_documentation(self, root: ET.Element) -> Dict[str, List[str]]:
+    def _extract_documentation(self, root: Element) -> Dict[str, List[str]]:
         docs = {}
         
         for elem in root.findall('.//*[@name]'):
@@ -402,7 +409,7 @@ class XSDSchemaHandler(XMLHandler):
         
         return docs
     
-    def _get_documentation(self, element: ET.Element) -> Optional[str]:
+    def _get_documentation(self, element: Element) -> Optional[str]:
         annotation = element.find('./{http://www.w3.org/2001/XMLSchema}annotation')
         if annotation is not None:
             doc = annotation.find('./{http://www.w3.org/2001/XMLSchema}documentation')
@@ -410,7 +417,7 @@ class XSDSchemaHandler(XMLHandler):
                 return doc.text.strip()
         return None
     
-    def _calculate_max_nesting(self, root: ET.Element) -> int:
+    def _calculate_max_nesting(self, root: Element) -> int:
         # Simplified calculation of nesting depth
         max_depth = 0
         
@@ -428,7 +435,7 @@ class XSDSchemaHandler(XMLHandler):
         
         return max_depth
     
-    def _check_recursion(self, root: ET.Element) -> bool:
+    def _check_recursion(self, root: Element) -> bool:
         # Simplified check for recursive type definitions
         type_refs = {}
         

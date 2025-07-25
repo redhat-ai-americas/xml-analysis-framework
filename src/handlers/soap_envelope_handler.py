@@ -6,11 +6,18 @@ Analyzes SOAP 1.1 and 1.2 message envelopes to extract headers, body content,
 fault information, and security details for web service analysis and security scanning.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -25,7 +32,7 @@ class SOAPEnvelopeHandler(XMLHandler):
     SOAP_11_NS = "http://schemas.xmlsoap.org/soap/envelope/"
     SOAP_12_NS = "http://www.w3.org/2003/05/soap-envelope"
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for SOAP Envelope root element
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
@@ -62,7 +69,7 @@ class SOAPEnvelopeHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Determine SOAP version
         version = "1.1"  # Default
         
@@ -100,7 +107,7 @@ class SOAPEnvelopeHandler(XMLHandler):
             metadata=metadata
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'envelope_info': self._analyze_envelope(root),
             'headers': self._analyze_headers(root),
@@ -152,7 +159,7 @@ class SOAPEnvelopeHandler(XMLHandler):
             quality_metrics=self._assess_message_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'message_metadata': {
                 'version': self._get_soap_version(root),
@@ -165,7 +172,7 @@ class SOAPEnvelopeHandler(XMLHandler):
             'fault_summary': self._extract_fault_summary(root)
         }
     
-    def _determine_message_type(self, root: ET.Element) -> str:
+    def _determine_message_type(self, root: Element) -> str:
         """Determine if this is a request, response, or fault message"""
         
         # Check for fault first - look in Body
@@ -191,7 +198,7 @@ class SOAPEnvelopeHandler(XMLHandler):
         # Default to request
         return "Request"
     
-    def _get_soap_version(self, root: ET.Element) -> str:
+    def _get_soap_version(self, root: Element) -> str:
         """Determine SOAP version from namespace"""
         if root.tag.startswith('{'):
             namespace = root.tag.split('}')[0][1:]
@@ -199,7 +206,7 @@ class SOAPEnvelopeHandler(XMLHandler):
                 return "1.2"
         return "1.1"
     
-    def _extract_target_service(self, root: ET.Element) -> Optional[str]:
+    def _extract_target_service(self, root: Element) -> Optional[str]:
         """Extract target service from WS-Addressing To header"""
         headers = self._find_element_by_local_name(root, 'Header')
         if headers is not None:
@@ -208,7 +215,7 @@ class SOAPEnvelopeHandler(XMLHandler):
                 return to_elem.text
         return None
     
-    def _has_security_headers(self, root: ET.Element) -> bool:
+    def _has_security_headers(self, root: Element) -> bool:
         """Check if message has security headers"""
         headers = self._find_element_by_local_name(root, 'Header')
         if headers is not None:
@@ -220,7 +227,7 @@ class SOAPEnvelopeHandler(XMLHandler):
                     return True
         return False
     
-    def _has_ws_addressing(self, root: ET.Element) -> bool:
+    def _has_ws_addressing(self, root: Element) -> bool:
         """Check if message uses WS-Addressing"""
         headers = self._find_element_by_local_name(root, 'Header')
         if headers is not None:
@@ -231,7 +238,7 @@ class SOAPEnvelopeHandler(XMLHandler):
                     return True
         return False
     
-    def _analyze_envelope(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_envelope(self, root: Element) -> Dict[str, Any]:
         """Analyze SOAP envelope properties"""
         return {
             'version': self._get_soap_version(root),
@@ -242,7 +249,7 @@ class SOAPEnvelopeHandler(XMLHandler):
             'encoding_style': root.get('encodingStyle', 'document/literal')
         }
     
-    def _analyze_headers(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_headers(self, root: Element) -> Dict[str, Any]:
         """Analyze SOAP headers"""
         headers_info = {
             'header_count': 0,
@@ -287,7 +294,7 @@ class SOAPEnvelopeHandler(XMLHandler):
         
         return headers_info
     
-    def _analyze_body(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_body(self, root: Element) -> Dict[str, Any]:
         """Analyze SOAP body content"""
         body_info = {
             'has_body': False,
@@ -334,7 +341,7 @@ class SOAPEnvelopeHandler(XMLHandler):
         
         return body_info
     
-    def _analyze_security(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_security(self, root: Element) -> Dict[str, Any]:
         """Analyze security-related headers and tokens"""
         security_info = {
             'has_security': False,
@@ -390,7 +397,7 @@ class SOAPEnvelopeHandler(XMLHandler):
         
         return security_info
     
-    def _analyze_ws_addressing(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_ws_addressing(self, root: Element) -> Dict[str, Any]:
         """Analyze WS-Addressing headers"""
         addressing_info = {
             'has_addressing': False,
@@ -440,7 +447,7 @@ class SOAPEnvelopeHandler(XMLHandler):
         
         return addressing_info
     
-    def _analyze_faults(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_faults(self, root: Element) -> Dict[str, Any]:
         """Analyze SOAP fault information"""
         fault_info = {
             'is_fault': False,
@@ -476,7 +483,7 @@ class SOAPEnvelopeHandler(XMLHandler):
         
         return fault_info
     
-    def _analyze_namespaces(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_namespaces(self, root: Element) -> Dict[str, Any]:
         """Analyze namespace declarations"""
         namespaces_info = {
             'declared_namespaces': {},
@@ -505,7 +512,7 @@ class SOAPEnvelopeHandler(XMLHandler):
         
         return namespaces_info
     
-    def _calculate_message_metrics(self, root: ET.Element) -> Dict[str, Any]:
+    def _calculate_message_metrics(self, root: Element) -> Dict[str, Any]:
         """Calculate message complexity and size metrics"""
         metrics = {
             'total_elements': 0,
@@ -548,7 +555,7 @@ class SOAPEnvelopeHandler(XMLHandler):
         
         return metrics
     
-    def _extract_security_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_security_summary(self, root: Element) -> Dict[str, Any]:
         """Extract security summary information"""
         return {
             'has_security': self._has_security_headers(root),
@@ -557,7 +564,7 @@ class SOAPEnvelopeHandler(XMLHandler):
             'token_count': len(self._analyze_security(root)['security_tokens'])
         }
     
-    def _extract_operation_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_operation_info(self, root: Element) -> Dict[str, Any]:
         """Extract operation information from body"""
         body_analysis = self._analyze_body(root)
         return {
@@ -567,7 +574,7 @@ class SOAPEnvelopeHandler(XMLHandler):
             'parameters': body_analysis['parameters'][:5]  # Limit to first 5
         }
     
-    def _extract_addressing_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_addressing_summary(self, root: Element) -> Dict[str, Any]:
         """Extract WS-Addressing summary"""
         addressing = self._analyze_ws_addressing(root)
         return {
@@ -577,7 +584,7 @@ class SOAPEnvelopeHandler(XMLHandler):
             'target': addressing['to']
         }
     
-    def _extract_fault_summary(self, root: ET.Element) -> Optional[Dict[str, str]]:
+    def _extract_fault_summary(self, root: Element) -> Optional[Dict[str, str]]:
         """Extract fault summary if present"""
         fault_analysis = self._analyze_faults(root)
         if fault_analysis['is_fault'] and fault_analysis['fault_details']:
@@ -589,7 +596,7 @@ class SOAPEnvelopeHandler(XMLHandler):
             }
         return None
     
-    def _extract_ws_addressing_action(self, root: ET.Element) -> Optional[str]:
+    def _extract_ws_addressing_action(self, root: Element) -> Optional[str]:
         """Extract WS-Addressing Action header"""
         headers = self._find_element_by_local_name(root, 'Header') 
         if headers is not None:
@@ -598,7 +605,7 @@ class SOAPEnvelopeHandler(XMLHandler):
                 return action.text
         return None
     
-    def _extract_fault_detail(self, detail: ET.Element) -> Dict[str, Any]:
+    def _extract_fault_detail(self, detail: Element) -> Dict[str, Any]:
         """Extract fault detail information"""
         detail_info = {
             'elements': [],
@@ -615,7 +622,7 @@ class SOAPEnvelopeHandler(XMLHandler):
         
         return detail_info
     
-    def _find_element_by_local_name(self, parent: ET.Element, local_name: str) -> Optional[ET.Element]:
+    def _find_element_by_local_name(self, parent: Element, local_name: str) -> Optional[Element]:
         """Find element by local name, ignoring namespace"""
         for elem in parent:
             elem_local_name = elem.tag.split('}')[-1] if '}' in elem.tag else elem.tag
@@ -623,7 +630,7 @@ class SOAPEnvelopeHandler(XMLHandler):
                 return elem
         return None
     
-    def _calculate_max_depth(self, elem: ET.Element, depth: int = 0) -> int:
+    def _calculate_max_depth(self, elem: Element, depth: int = 0) -> int:
         """Calculate maximum depth of element tree"""
         if not list(elem):
             return depth

@@ -1,6 +1,6 @@
 # XML Analysis Framework
 
-[![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Test Success Rate](https://img.shields.io/badge/Tests-100%25%20Success-brightgreen.svg)](./test_results)
 [![Handlers](https://img.shields.io/badge/Specialized%20Handlers-29-blue.svg)](./src/handlers)
@@ -90,7 +90,7 @@ for chunk in chunks:
 - **100% Success Rate**: All 71 test files processed successfully
 - **2,752 Chunks Generated**: Average 38.8 optimized chunks per file  
 - **54 Document Types Detected**: Comprehensive XML format coverage
-- **Zero Dependencies**: Pure Python stdlib implementation
+- **Minimal Dependencies**: Only defusedxml for security + Python stdlib
 
 ### 2. **🧠 29 Specialized XML Handlers**
 Enterprise-grade document intelligence:
@@ -173,6 +173,60 @@ xml-analysis-framework/
     └── reports/             # Generated reports
 ```
 
+## 🔒 Security
+
+### XML Security Protection
+
+This framework uses **defusedxml** to protect against common XML security vulnerabilities:
+
+- **XXE (XML External Entity) attacks**: Prevents reading local files or making network requests
+- **Billion Laughs attack**: Prevents exponential entity expansion DoS attacks  
+- **DTD retrieval**: Blocks external DTD fetching to prevent data exfiltration
+
+#### Security Features
+
+```python
+# All XML parsing is automatically protected
+from core.analyzer import XMLDocumentAnalyzer
+
+analyzer = XMLDocumentAnalyzer()
+# Safe parsing - malicious XML will be rejected
+result = analyzer.analyze_document("potentially_malicious.xml")
+
+if result.get('security_issue'):
+    print(f"Security threat detected: {result['error']}")
+```
+
+#### Best Practices
+
+1. **Always use the framework's parsers** - Never use `xml.etree.ElementTree` directly
+2. **Validate file sizes** - Set reasonable limits for your use case
+3. **Sanitize file paths** - Ensure input paths are properly validated
+4. **Monitor for security exceptions** - Log and alert on security-blocked parsing attempts
+
+### File Size Limits
+
+The framework includes built-in file size limits to prevent memory exhaustion:
+
+```python
+# Built-in size limits in analyzer and chunking
+from core.analyzer import XMLDocumentAnalyzer
+from core.chunking import ChunkingOrchestrator
+
+# Create analyzer with 50MB limit
+analyzer = XMLDocumentAnalyzer(max_file_size_mb=50.0)
+
+# Create chunking orchestrator with 100MB limit  
+orchestrator = ChunkingOrchestrator(max_file_size_mb=100.0)
+
+# Utility functions for easy setup
+from utils import create_analyzer_with_limits, FileSizeLimits
+
+# Use predefined limits
+analyzer = create_analyzer_with_limits(FileSizeLimits.PRODUCTION_MEDIUM)  # 50MB
+safe_result = safe_analyze_document("file.xml", FileSizeLimits.REAL_TIME)  # 5MB
+```
+
 ## 🔧 Installation
 
 ```bash
@@ -185,7 +239,10 @@ pip install -e .
 pip install -e .[dev]
 ```
 
-**No external dependencies required!** Uses only Python standard library (3.7+).
+### Dependencies
+
+- **defusedxml** (0.7.1+): For secure XML parsing protection
+- Python standard library (3.8+) for all other functionality
 
 ## 📖 Usage Examples
 
@@ -215,6 +272,22 @@ print(f"Handler Used: {result['handler_used']}")
 print(f"AI Use Cases: {result['analysis'].ai_use_cases}")
 ```
 
+### Safe Analysis with File Validation
+```python
+from utils import safe_analyze_document, FileSizeLimits
+
+# Safe analysis with comprehensive validation
+result = safe_analyze_document(
+    'document.xml', 
+    max_size_mb=FileSizeLimits.PRODUCTION_MEDIUM
+)
+
+if result.get('error'):
+    print(f"Analysis failed: {result['error']}")
+else:
+    print(f"Success: {result['document_type'].type_name}")
+```
+
 ### Intelligent Chunking
 ```python
 from core.chunking import ChunkingOrchestrator, XMLChunkingStrategy
@@ -239,7 +312,7 @@ for chunk in chunks:
 - ✅ **100% Success Rate**: All 71 XML files processed successfully  
 - ✅ **2,752 Chunks Generated**: Optimal segmentation across diverse document types
 - ✅ **54 Document Types**: Comprehensive coverage from ServiceNow to SCAP to Maven
-- ✅ **Zero Dependencies**: Pure Python stdlib implementation
+- ✅ **Secure by Default**: Protected against XXE and billion laughs attacks
 
 ### **Test Coverage**
 ```bash
@@ -316,7 +389,7 @@ graph LR
 - **📊 2,752 Chunks Generated**: Optimal 38.8 avg chunks per document
 - **🎯 54 Document Types**: Comprehensive XML format coverage
 - **⚡ High Performance**: 0.015s average processing time per document
-- **🏗️ Zero Dependencies**: Pure Python standard library implementation
+- **🔒 Secure Parsing**: defusedxml protection against XML attacks
 
 ### **Handler Confidence Levels**
 - **100% Confidence**: XML Schema (XSD), Maven POM, Log4j, RSS/Atom, Sitemaps

@@ -7,12 +7,19 @@ Extracts content structure, semantic elements, accessibility features,
 metadata, and web standards compliance information.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
 from urllib.parse import urlparse
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -25,13 +32,13 @@ class XHTMLHandler(XMLHandler):
     
     XHTML_NAMESPACE = "http://www.w3.org/1999/xhtml"
     
-    def _get_namespace(self, root: ET.Element) -> str:
+    def _get_namespace(self, root: Element) -> str:
         """Extract namespace prefix from root element"""
         if '}' in root.tag:
             return root.tag.split('}')[0] + '}'
         return ''
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for XHTML namespace
         if any('w3.org/1999/xhtml' in uri for uri in namespaces.values()):
             return True, 1.0
@@ -64,7 +71,7 @@ class XHTMLHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Detect XHTML version
         version = "1.0"  # Default
         
@@ -104,7 +111,7 @@ class XHTMLHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'document_structure': self._analyze_structure(root),
             'content_analysis': self._analyze_content(root),
@@ -158,7 +165,7 @@ class XHTMLHandler(XMLHandler):
             quality_metrics=self._assess_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'page_metadata': self._extract_page_metadata(root),
             'content_hierarchy': self._extract_content_hierarchy(root),
@@ -167,7 +174,7 @@ class XHTMLHandler(XMLHandler):
             'media_inventory': self._extract_media_inventory(root)
         }
     
-    def _analyze_structure(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_structure(self, root: Element) -> Dict[str, Any]:
         """Analyze document structure"""
         ns = self._get_namespace(root)
         structure = {
@@ -194,7 +201,7 @@ class XHTMLHandler(XMLHandler):
         
         return structure
     
-    def _analyze_content(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_content(self, root: Element) -> Dict[str, Any]:
         """Analyze content elements"""
         ns = self._get_namespace(root)
         content = {
@@ -237,7 +244,7 @@ class XHTMLHandler(XMLHandler):
         
         return content
     
-    def _analyze_semantic_elements(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_semantic_elements(self, root: Element) -> Dict[str, Any]:
         """Analyze HTML5 semantic elements"""
         ns = self._get_namespace(root)
         semantic = {
@@ -260,7 +267,7 @@ class XHTMLHandler(XMLHandler):
         
         return semantic
     
-    def _analyze_metadata(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_metadata(self, root: Element) -> Dict[str, Any]:
         """Analyze document metadata"""
         ns = self._get_namespace(root)
         metadata = {
@@ -321,7 +328,7 @@ class XHTMLHandler(XMLHandler):
         
         return metadata
     
-    def _analyze_accessibility(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_accessibility(self, root: Element) -> Dict[str, Any]:
         """Analyze accessibility features"""
         ns = self._get_namespace(root)
         accessibility = {
@@ -387,7 +394,7 @@ class XHTMLHandler(XMLHandler):
         
         return accessibility
     
-    def _analyze_links_and_media(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_links_and_media(self, root: Element) -> Dict[str, Any]:
         """Analyze links and media elements"""
         ns = self._get_namespace(root)
         links_media = {
@@ -436,7 +443,7 @@ class XHTMLHandler(XMLHandler):
         
         return links_media
     
-    def _analyze_forms(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_forms(self, root: Element) -> Dict[str, Any]:
         """Analyze form elements"""
         ns = self._get_namespace(root)
         forms = {
@@ -474,7 +481,7 @@ class XHTMLHandler(XMLHandler):
         
         return forms
     
-    def _analyze_styling_and_scripts(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_styling_and_scripts(self, root: Element) -> Dict[str, Any]:
         """Analyze styling and script elements"""
         ns = self._get_namespace(root)
         styling_scripts = {
@@ -514,7 +521,7 @@ class XHTMLHandler(XMLHandler):
         
         return styling_scripts
     
-    def _assess_compliance(self, root: ET.Element) -> Dict[str, Any]:
+    def _assess_compliance(self, root: Element) -> Dict[str, Any]:
         """Assess standards compliance"""
         compliance = {
             'has_doctype': False,
@@ -540,7 +547,7 @@ class XHTMLHandler(XMLHandler):
         
         return compliance
     
-    def _extract_page_metadata(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_page_metadata(self, root: Element) -> Dict[str, Any]:
         """Extract comprehensive page metadata"""
         metadata = self._analyze_metadata(root)
         
@@ -570,7 +577,7 @@ class XHTMLHandler(XMLHandler):
         
         return result
     
-    def _extract_content_hierarchy(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_content_hierarchy(self, root: Element) -> List[Dict[str, Any]]:
         """Extract content hierarchy based on headings"""
         ns = self._get_namespace(root)
         hierarchy = []
@@ -593,7 +600,7 @@ class XHTMLHandler(XMLHandler):
         
         return hierarchy[:50]  # Limit for performance
     
-    def _extract_navigation(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_navigation(self, root: Element) -> List[Dict[str, Any]]:
         """Extract navigation structure"""
         ns = self._get_namespace(root)
         navigation = []
@@ -619,7 +626,7 @@ class XHTMLHandler(XMLHandler):
         
         return navigation[:10]  # Limit
     
-    def _extract_form_data(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_form_data(self, root: Element) -> List[Dict[str, Any]]:
         """Extract form structure data"""
         ns = self._get_namespace(root)
         forms_data = []
@@ -670,7 +677,7 @@ class XHTMLHandler(XMLHandler):
         
         return forms_data[:10]  # Limit
     
-    def _extract_media_inventory(self, root: ET.Element) -> Dict[str, List[Dict[str, Any]]]:
+    def _extract_media_inventory(self, root: Element) -> Dict[str, List[Dict[str, Any]]]:
         """Extract media inventory"""
         ns = self._get_namespace(root)
         media = {
@@ -794,7 +801,7 @@ class XHTMLHandler(XMLHandler):
         return metrics
     
     # Utility methods
-    def _calculate_max_depth(self, element: ET.Element, current_depth: int = 0) -> int:
+    def _calculate_max_depth(self, element: Element, current_depth: int = 0) -> int:
         """Calculate maximum nesting depth"""
         if not list(element):
             return current_depth
@@ -806,7 +813,7 @@ class XHTMLHandler(XMLHandler):
         
         return max_child_depth
     
-    def _extract_text_content(self, element: ET.Element) -> str:
+    def _extract_text_content(self, element: Element) -> str:
         """Extract all text content from element and children"""
         texts = []
         if element.text:
@@ -819,7 +826,7 @@ class XHTMLHandler(XMLHandler):
         
         return ' '.join(text for text in texts if text)
     
-    def _detect_content_language(self, root: ET.Element, ns: str) -> Optional[str]:
+    def _detect_content_language(self, root: Element, ns: str) -> Optional[str]:
         """Simple content language detection"""
         # This is a very basic implementation
         # In practice, you might use a proper language detection library

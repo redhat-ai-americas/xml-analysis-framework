@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from handlers.log4j_config_handler import Log4jConfigHandler
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 
 def test_log4j_handler():
     """Test Log4j handler with synthetic test files"""

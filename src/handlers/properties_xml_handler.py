@@ -7,12 +7,19 @@ These are commonly used for configuration in Java applications
 and provide a structured alternative to traditional .properties files.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -23,7 +30,7 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class PropertiesXMLHandler(XMLHandler):
     """Handler for Java Properties XML files"""
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Java Properties XML files have specific DTD
         if root.tag == 'properties' or root.tag.endswith('}properties'):
             # Check for properties-specific structure
@@ -37,7 +44,7 @@ class PropertiesXMLHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Properties XML files typically reference a specific DTD
         dtd_version = "1.0"  # Standard version
         
@@ -58,7 +65,7 @@ class PropertiesXMLHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             'properties': self._extract_all_properties(root),
             'property_groups': self._group_properties_by_prefix(root),
@@ -104,7 +111,7 @@ class PropertiesXMLHandler(XMLHandler):
             quality_metrics=self._assess_property_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             'all_properties': self._extract_properties_dict(root),
             'grouped_properties': self._extract_grouped_properties(root),
@@ -112,7 +119,7 @@ class PropertiesXMLHandler(XMLHandler):
             'property_patterns': self._analyze_property_patterns(root)
         }
     
-    def _extract_all_properties(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_all_properties(self, root: Element) -> List[Dict[str, Any]]:
         """Extract all properties with their details"""
         properties = []
         
@@ -142,7 +149,7 @@ class PropertiesXMLHandler(XMLHandler):
         
         return properties
     
-    def _group_properties_by_prefix(self, root: ET.Element) -> Dict[str, List[Dict[str, str]]]:
+    def _group_properties_by_prefix(self, root: Element) -> Dict[str, List[Dict[str, str]]]:
         """Group properties by their prefix (e.g., 'database.', 'server.', etc.)"""
         groups = {}
         
@@ -161,7 +168,7 @@ class PropertiesXMLHandler(XMLHandler):
         
         return groups
     
-    def _detect_environment_configs(self, root: ET.Element) -> Dict[str, List[str]]:
+    def _detect_environment_configs(self, root: Element) -> Dict[str, List[str]]:
         """Detect environment-specific configurations"""
         env_configs = {
             'development': [],
@@ -191,7 +198,7 @@ class PropertiesXMLHandler(XMLHandler):
         
         return env_configs
     
-    def _find_sensitive_properties(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _find_sensitive_properties(self, root: Element) -> List[Dict[str, Any]]:
         """Find potentially sensitive properties"""
         sensitive_properties = []
         
@@ -226,7 +233,7 @@ class PropertiesXMLHandler(XMLHandler):
         
         return sensitive_properties
     
-    def _find_placeholders(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _find_placeholders(self, root: Element) -> List[Dict[str, str]]:
         """Find properties with placeholder values"""
         placeholders = []
         
@@ -254,7 +261,7 @@ class PropertiesXMLHandler(XMLHandler):
         
         return placeholders
     
-    def _find_duplicate_keys(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _find_duplicate_keys(self, root: Element) -> List[Dict[str, Any]]:
         """Find duplicate property keys"""
         key_occurrences = {}
         duplicates = []
@@ -280,7 +287,7 @@ class PropertiesXMLHandler(XMLHandler):
         
         return duplicates
     
-    def _calculate_statistics(self, root: ET.Element) -> Dict[str, Any]:
+    def _calculate_statistics(self, root: Element) -> Dict[str, Any]:
         """Calculate property statistics"""
         all_entries = root.findall('.//entry')
         
@@ -485,7 +492,7 @@ class PropertiesXMLHandler(XMLHandler):
         
         return 'other'
     
-    def _extract_properties_dict(self, root: ET.Element) -> Dict[str, str]:
+    def _extract_properties_dict(self, root: Element) -> Dict[str, str]:
         """Extract properties as a simple key-value dictionary"""
         properties = {}
         
@@ -496,7 +503,7 @@ class PropertiesXMLHandler(XMLHandler):
         
         return properties
     
-    def _extract_grouped_properties(self, root: ET.Element) -> Dict[str, Dict[str, str]]:
+    def _extract_grouped_properties(self, root: Element) -> Dict[str, Dict[str, str]]:
         """Extract properties grouped by prefix"""
         grouped = {}
         
@@ -513,7 +520,7 @@ class PropertiesXMLHandler(XMLHandler):
         
         return grouped
     
-    def _extract_metadata(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_metadata(self, root: Element) -> Dict[str, Any]:
         """Extract metadata about the properties file"""
         metadata = {}
         
@@ -546,7 +553,7 @@ class PropertiesXMLHandler(XMLHandler):
         
         return metadata
     
-    def _analyze_property_patterns(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_property_patterns(self, root: Element) -> Dict[str, Any]:
         """Analyze patterns in property definitions"""
         patterns = {
             'hierarchical_groups': {},

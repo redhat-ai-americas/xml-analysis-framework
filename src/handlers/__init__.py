@@ -6,6 +6,8 @@ This module provides a single import point for all handlers and maintains
 the handler registry used by the main analyzer.
 """
 
+from typing import Dict, List, Any
+
 # Core handlers (moved from main files) - only import what exists
 from .scap_handler import SCAPHandler
 from .rss_handler import RSSHandler
@@ -127,10 +129,14 @@ HANDLER_CATEGORIES = {
     'fallback': [GenericXMLHandler]
 }
 
-# Export handler classes for backward compatibility
+# Export handler classes and utilities
 __all__ = [
     'ALL_HANDLERS',
     'HANDLER_CATEGORIES',
+    'get_handlers_by_category',
+    'get_handler_categories', 
+    'get_handler_info',
+    'find_handler_by_name',
     'SCAPHandler',
     'RSSHandler',
     'MavenPOMHandler',
@@ -161,3 +167,31 @@ __all__ = [
     'XSDSchemaHandler',
     'ServiceNowHandler',
 ]
+
+# Handler Registry Utilities
+def get_handlers_by_category(category: str) -> List:
+    """Get all handlers in a specific category"""
+    return HANDLER_CATEGORIES.get(category, [])
+
+def get_handler_categories() -> List[str]:
+    """Get list of all handler categories"""
+    return list(HANDLER_CATEGORIES.keys())
+
+def get_handler_info() -> Dict[str, Any]:
+    """Get comprehensive information about the handler registry"""
+    return {
+        'total_handlers': len(ALL_HANDLERS),
+        'categories': len(HANDLER_CATEGORIES),
+        'handlers_by_category': {
+            category: len(handlers) 
+            for category, handlers in HANDLER_CATEGORIES.items()
+        },
+        'handler_names': [handler.__name__ for handler in ALL_HANDLERS]
+    }
+
+def find_handler_by_name(name: str):
+    """Find a handler class by name"""
+    for handler in ALL_HANDLERS:
+        if handler.__name__ == name or handler.__name__ == f"{name}Handler":
+            return handler
+    return None

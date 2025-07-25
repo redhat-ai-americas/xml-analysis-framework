@@ -34,15 +34,14 @@ setup(
         "Topic :: Text Processing :: Markup :: XML",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     install_requires=[
-        # Only using Python standard library - no external dependencies
+        "defusedxml>=0.7.1",  # For secure XML parsing
     ],
     extras_require={
         "dev": [

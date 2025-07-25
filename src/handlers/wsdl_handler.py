@@ -6,11 +6,18 @@ Analyzes WSDL files to extract service definitions, operations,
 message schemas, and binding information for SOAP web services.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -21,7 +28,7 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class WSDLHandler(XMLHandler):
     """Handler for WSDL (Web Services Description Language) documents"""
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for WSDL root element
         if root.tag.endswith('definitions') or root.tag == 'definitions':
             # Check for WSDL namespace
@@ -36,7 +43,7 @@ class WSDLHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         # Determine WSDL version
         version = "1.1"  # Default
         if root.tag.endswith('description') or any('w3.org/ns/wsdl' in uri for uri in namespaces.values()):
@@ -56,7 +63,7 @@ class WSDLHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         # Determine version for proper parsing
         is_wsdl2 = root.tag.endswith('description') or 'w3.org/ns/wsdl' in str(root.attrib.values())
         
@@ -101,7 +108,7 @@ class WSDLHandler(XMLHandler):
             quality_metrics=self._assess_wsdl_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         is_wsdl2 = root.tag.endswith('description')
         
         if is_wsdl2:
@@ -109,7 +116,7 @@ class WSDLHandler(XMLHandler):
         else:
             return self._extract_wsdl1_data(root)
     
-    def _analyze_wsdl1(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_wsdl1(self, root: Element) -> Dict[str, Any]:
         """Analyze WSDL 1.1 document"""
         findings = {
             'services': self._extract_services(root),
@@ -128,7 +135,7 @@ class WSDLHandler(XMLHandler):
         
         return findings
     
-    def _analyze_wsdl2(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_wsdl2(self, root: Element) -> Dict[str, Any]:
         """Analyze WSDL 2.0 document"""
         # WSDL 2.0 has different structure
         findings = {
@@ -147,7 +154,7 @@ class WSDLHandler(XMLHandler):
         
         return findings
     
-    def _extract_services(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_services(self, root: Element) -> List[Dict[str, Any]]:
         """Extract service definitions from WSDL 1.1"""
         services = []
         
@@ -183,7 +190,7 @@ class WSDLHandler(XMLHandler):
         
         return services
     
-    def _extract_port_types(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_port_types(self, root: Element) -> List[Dict[str, Any]]:
         """Extract port types (interfaces) from WSDL 1.1"""
         port_types = []
         
@@ -226,7 +233,7 @@ class WSDLHandler(XMLHandler):
         
         return port_types
     
-    def _extract_operations(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_operations(self, root: Element) -> List[Dict[str, Any]]:
         """Extract all operations with details"""
         operations = []
         
@@ -243,7 +250,7 @@ class WSDLHandler(XMLHandler):
         
         return operations
     
-    def _extract_messages(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_messages(self, root: Element) -> List[Dict[str, Any]]:
         """Extract message definitions"""
         messages = []
         
@@ -266,7 +273,7 @@ class WSDLHandler(XMLHandler):
         
         return messages
     
-    def _extract_types(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_types(self, root: Element) -> List[Dict[str, Any]]:
         """Extract type definitions from embedded schemas"""
         types = []
         
@@ -305,7 +312,7 @@ class WSDLHandler(XMLHandler):
         
         return types
     
-    def _extract_bindings(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_bindings(self, root: Element) -> List[Dict[str, Any]]:
         """Extract binding definitions"""
         bindings = []
         
@@ -345,7 +352,7 @@ class WSDLHandler(XMLHandler):
         
         return bindings
     
-    def _extract_imports(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_imports(self, root: Element) -> List[Dict[str, str]]:
         """Extract import statements"""
         imports = []
         
@@ -358,7 +365,7 @@ class WSDLHandler(XMLHandler):
         return imports
     
     # WSDL 2.0 specific methods
-    def _extract_services_v2(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_services_v2(self, root: Element) -> List[Dict[str, Any]]:
         """Extract services from WSDL 2.0"""
         services = []
         
@@ -380,7 +387,7 @@ class WSDLHandler(XMLHandler):
         
         return services
     
-    def _extract_interfaces_v2(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_interfaces_v2(self, root: Element) -> List[Dict[str, Any]]:
         """Extract interfaces from WSDL 2.0 (equivalent to portType in 1.1)"""
         interfaces = []
         
@@ -402,7 +409,7 @@ class WSDLHandler(XMLHandler):
         
         return interfaces
     
-    def _extract_operations_v2(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_operations_v2(self, root: Element) -> List[Dict[str, Any]]:
         """Extract operations from WSDL 2.0"""
         operations = []
         
@@ -419,7 +426,7 @@ class WSDLHandler(XMLHandler):
         
         return operations
     
-    def _extract_bindings_v2(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_bindings_v2(self, root: Element) -> List[Dict[str, Any]]:
         """Extract bindings from WSDL 2.0"""
         bindings = []
         
@@ -433,7 +440,7 @@ class WSDLHandler(XMLHandler):
         
         return bindings
     
-    def _extract_protocol_v2(self, binding: ET.Element) -> str:
+    def _extract_protocol_v2(self, binding: Element) -> str:
         """Determine protocol from WSDL 2.0 binding"""
         binding_type = binding.get('type', '')
         
@@ -444,7 +451,7 @@ class WSDLHandler(XMLHandler):
         else:
             return 'unknown'
     
-    def _determine_mep(self, operation: ET.Element) -> str:
+    def _determine_mep(self, operation: Element) -> str:
         """Determine Message Exchange Pattern"""
         has_input = operation.find('.//{http://schemas.xmlsoap.org/wsdl/}input') is not None
         has_output = operation.find('.//{http://schemas.xmlsoap.org/wsdl/}output') is not None
@@ -458,14 +465,14 @@ class WSDLHandler(XMLHandler):
         else:
             return 'unknown'
     
-    def _get_documentation(self, element: ET.Element) -> Optional[str]:
+    def _get_documentation(self, element: Element) -> Optional[str]:
         """Extract documentation from element"""
         doc = element.find('.//{http://schemas.xmlsoap.org/wsdl/}documentation')
         if doc is not None and doc.text:
             return doc.text.strip()
         return None
     
-    def _extract_wsdl1_data(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_wsdl1_data(self, root: Element) -> Dict[str, Any]:
         """Extract key data for WSDL 1.1"""
         return {
             'service_endpoints': self._extract_all_endpoints(root),
@@ -474,7 +481,7 @@ class WSDLHandler(XMLHandler):
             'message_schemas': self._extract_message_schemas(root)
         }
     
-    def _extract_wsdl2_data(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_wsdl2_data(self, root: Element) -> Dict[str, Any]:
         """Extract key data for WSDL 2.0"""
         return {
             'service_endpoints': self._extract_all_endpoints_v2(root),
@@ -482,7 +489,7 @@ class WSDLHandler(XMLHandler):
             'operation_patterns': self._extract_operation_patterns_v2(root)
         }
     
-    def _extract_all_endpoints(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_all_endpoints(self, root: Element) -> List[Dict[str, str]]:
         """Extract all service endpoints"""
         endpoints = []
         
@@ -502,7 +509,7 @@ class WSDLHandler(XMLHandler):
         
         return endpoints
     
-    def _extract_operation_signatures(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_operation_signatures(self, root: Element) -> List[Dict[str, Any]]:
         """Extract operation signatures with input/output"""
         signatures = []
         
@@ -527,7 +534,7 @@ class WSDLHandler(XMLHandler):
         
         return signatures[:20]  # Limit to first 20
     
-    def _extract_soap_actions(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_soap_actions(self, root: Element) -> List[Dict[str, str]]:
         """Extract SOAP actions for operations"""
         actions = []
         
@@ -543,7 +550,7 @@ class WSDLHandler(XMLHandler):
         
         return actions
     
-    def _extract_message_schemas(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_message_schemas(self, root: Element) -> List[Dict[str, Any]]:
         """Extract message schemas"""
         schemas = []
         
@@ -563,7 +570,7 @@ class WSDLHandler(XMLHandler):
         
         return schemas
     
-    def _resolve_message_type(self, root: ET.Element, message_ref: str) -> Optional[str]:
+    def _resolve_message_type(self, root: Element, message_ref: str) -> Optional[str]:
         """Resolve message reference to type"""
         if not message_ref:
             return None
@@ -581,7 +588,7 @@ class WSDLHandler(XMLHandler):
         
         return message_ref
     
-    def _extract_all_endpoints_v2(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_all_endpoints_v2(self, root: Element) -> List[Dict[str, str]]:
         """Extract endpoints from WSDL 2.0"""
         endpoints = []
         
@@ -596,7 +603,7 @@ class WSDLHandler(XMLHandler):
         
         return endpoints
     
-    def _extract_interface_hierarchy(self, root: ET.Element) -> Dict[str, List[str]]:
+    def _extract_interface_hierarchy(self, root: Element) -> Dict[str, List[str]]:
         """Extract interface inheritance in WSDL 2.0"""
         hierarchy = {}
         
@@ -611,7 +618,7 @@ class WSDLHandler(XMLHandler):
         
         return hierarchy
     
-    def _extract_operation_patterns_v2(self, root: ET.Element) -> List[Dict[str, str]]:
+    def _extract_operation_patterns_v2(self, root: Element) -> List[Dict[str, str]]:
         """Extract operation patterns from WSDL 2.0"""
         patterns = []
         

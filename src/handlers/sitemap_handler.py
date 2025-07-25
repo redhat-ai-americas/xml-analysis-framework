@@ -6,11 +6,18 @@ Analyzes XML sitemap files for SEO optimization, URL structure analysis,
 content indexing patterns, and website health monitoring.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import sys
 import os
 from urllib.parse import urlparse
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -23,7 +30,7 @@ class SitemapHandler(XMLHandler):
     
     SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for sitemap namespace
         if 'sitemaps.org/schemas/sitemap' in str(namespaces.values()):
             return True, 1.0
@@ -35,7 +42,7 @@ class SitemapHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         is_index = tag == 'sitemapindex'
         
@@ -55,7 +62,7 @@ class SitemapHandler(XMLHandler):
             metadata=metadata
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         is_index = tag == 'sitemapindex'
         
@@ -127,7 +134,7 @@ class SitemapHandler(XMLHandler):
             quality_metrics=self._assess_sitemap_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         is_index = tag == 'sitemapindex'
         
@@ -142,7 +149,7 @@ class SitemapHandler(XMLHandler):
             'technical_summary': self._extract_technical_summary(root, is_index)
         }
     
-    def _extract_namespace_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_namespace_info(self, root: Element) -> Dict[str, Any]:
         """Extract namespace information"""
         namespaces = {}
         for key, value in root.attrib.items():
@@ -156,7 +163,7 @@ class SitemapHandler(XMLHandler):
             'schema_version': '0.9'  # Standard sitemap version
         }
     
-    def _analyze_url_sitemap(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_url_sitemap(self, root: Element) -> Dict[str, Any]:
         """Analyze URL sitemap content"""
         urls = root.findall(f'.//{{{self.SITEMAP_NAMESPACE}}}url')
         
@@ -172,7 +179,7 @@ class SitemapHandler(XMLHandler):
         
         return findings
     
-    def _analyze_sitemap_index(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_sitemap_index(self, root: Element) -> Dict[str, Any]:
         """Analyze sitemap index content"""
         sitemaps = root.findall(f'.//{{{self.SITEMAP_NAMESPACE}}}sitemap')
         
@@ -185,7 +192,7 @@ class SitemapHandler(XMLHandler):
         
         return findings
     
-    def _analyze_seo_aspects(self, root: ET.Element, is_index: bool) -> Dict[str, Any]:
+    def _analyze_seo_aspects(self, root: Element, is_index: bool) -> Dict[str, Any]:
         """Analyze SEO-related aspects"""
         seo_analysis = {
             'priority_distribution': {},
@@ -237,7 +244,7 @@ class SitemapHandler(XMLHandler):
         
         return seo_analysis
     
-    def _analyze_technical_aspects(self, root: ET.Element, is_index: bool) -> Dict[str, Any]:
+    def _analyze_technical_aspects(self, root: Element, is_index: bool) -> Dict[str, Any]:
         """Analyze technical aspects of the sitemap"""
         technical = {
             'file_size': self._estimate_file_size(root),
@@ -258,7 +265,7 @@ class SitemapHandler(XMLHandler):
         
         return technical
     
-    def _analyze_quality_indicators(self, root: ET.Element, is_index: bool) -> Dict[str, Any]:
+    def _analyze_quality_indicators(self, root: Element, is_index: bool) -> Dict[str, Any]:
         """Analyze quality indicators"""
         quality = {
             'completeness_score': 0.0,
@@ -297,7 +304,7 @@ class SitemapHandler(XMLHandler):
         
         return quality
     
-    def _analyze_accessibility(self, root: ET.Element, is_index: bool) -> Dict[str, Any]:
+    def _analyze_accessibility(self, root: Element, is_index: bool) -> Dict[str, Any]:
         """Analyze accessibility of URLs in sitemap"""
         accessibility = {
             'protocol_analysis': {},
@@ -333,7 +340,7 @@ class SitemapHandler(XMLHandler):
         
         return accessibility
     
-    def _analyze_performance_aspects(self, root: ET.Element, is_index: bool) -> Dict[str, Any]:
+    def _analyze_performance_aspects(self, root: Element, is_index: bool) -> Dict[str, Any]:
         """Analyze performance-related aspects"""
         performance = {
             'size_optimization': {},
@@ -369,7 +376,7 @@ class SitemapHandler(XMLHandler):
         
         return performance
     
-    def _analyze_compliance(self, root: ET.Element, is_index: bool) -> Dict[str, Any]:
+    def _analyze_compliance(self, root: Element, is_index: bool) -> Dict[str, Any]:
         """Analyze compliance with sitemap protocol"""
         compliance = {
             'protocol_version': '0.9',
@@ -405,7 +412,7 @@ class SitemapHandler(XMLHandler):
         
         return compliance
     
-    def _analyze_security_aspects(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_security_aspects(self, root: Element) -> Dict[str, Any]:
         """Analyze security aspects"""
         security = {
             'exposed_information': [],
@@ -440,7 +447,7 @@ class SitemapHandler(XMLHandler):
         
         return security
     
-    def _identify_optimization_opportunities(self, root: ET.Element, is_index: bool) -> Dict[str, Any]:
+    def _identify_optimization_opportunities(self, root: Element, is_index: bool) -> Dict[str, Any]:
         """Identify optimization opportunities"""
         opportunities = {
             'seo_opportunities': [],
@@ -475,7 +482,7 @@ class SitemapHandler(XMLHandler):
         
         return opportunities
     
-    def _extract_url_details(self, urls: List[ET.Element]) -> List[Dict[str, Any]]:
+    def _extract_url_details(self, urls: List[Element]) -> List[Dict[str, Any]]:
         """Extract detailed information for URLs"""
         url_details = []
         
@@ -509,7 +516,7 @@ class SitemapHandler(XMLHandler):
         
         return url_details
     
-    def _extract_sitemap_details(self, sitemaps: List[ET.Element]) -> List[Dict[str, Any]]:
+    def _extract_sitemap_details(self, sitemaps: List[Element]) -> List[Dict[str, Any]]:
         """Extract detailed information for sitemaps in index"""
         sitemap_details = []
         
@@ -528,7 +535,7 @@ class SitemapHandler(XMLHandler):
         
         return sitemap_details
     
-    def _analyze_priorities(self, urls: List[ET.Element]) -> Dict[str, int]:
+    def _analyze_priorities(self, urls: List[Element]) -> Dict[str, int]:
         """Analyze priority distribution"""
         priorities = {}
         
@@ -540,7 +547,7 @@ class SitemapHandler(XMLHandler):
         
         return priorities
     
-    def _analyze_changefreqs(self, urls: List[ET.Element]) -> Dict[str, int]:
+    def _analyze_changefreqs(self, urls: List[Element]) -> Dict[str, int]:
         """Analyze change frequency distribution"""
         frequencies = {}
         
@@ -552,7 +559,7 @@ class SitemapHandler(XMLHandler):
         
         return frequencies
     
-    def _analyze_lastmod(self, urls: List[ET.Element]) -> Dict[str, Any]:
+    def _analyze_lastmod(self, urls: List[Element]) -> Dict[str, Any]:
         """Analyze last modification dates"""
         dates = []
         
@@ -571,7 +578,7 @@ class SitemapHandler(XMLHandler):
         
         return {'count': 0}
     
-    def _analyze_url_patterns(self, urls: List[ET.Element]) -> Dict[str, Any]:
+    def _analyze_url_patterns(self, urls: List[Element]) -> Dict[str, Any]:
         """Analyze URL patterns and structure"""
         patterns = {
             'domains': set(),
@@ -607,7 +614,7 @@ class SitemapHandler(XMLHandler):
         patterns['domains'] = list(patterns['domains'])
         return patterns
     
-    def _analyze_sitemap_dates(self, sitemaps: List[ET.Element]) -> Dict[str, Any]:
+    def _analyze_sitemap_dates(self, sitemaps: List[Element]) -> Dict[str, Any]:
         """Analyze sitemap modification dates"""
         dates = []
         
@@ -625,7 +632,7 @@ class SitemapHandler(XMLHandler):
         
         return {'count': 0}
     
-    def _analyze_sitemap_size(self, root: ET.Element, urls: List[ET.Element]) -> Dict[str, Any]:
+    def _analyze_sitemap_size(self, root: Element, urls: List[Element]) -> Dict[str, Any]:
         """Analyze sitemap size characteristics"""
         return {
             'url_count': len(urls),
@@ -635,7 +642,7 @@ class SitemapHandler(XMLHandler):
             'compression_recommended': self._estimate_file_size(root) > 10000
         }
     
-    def _analyze_index_size_distribution(self, sitemaps: List[ET.Element]) -> Dict[str, Any]:
+    def _analyze_index_size_distribution(self, sitemaps: List[Element]) -> Dict[str, Any]:
         """Analyze size distribution in sitemap index"""
         return {
             'sitemap_count': len(sitemaps),
@@ -643,7 +650,7 @@ class SitemapHandler(XMLHandler):
             'index_efficiency': min(len(sitemaps) / 1000, 1.0)  # Efficiency score
         }
     
-    def _calculate_average_priority(self, urls: List[ET.Element]) -> float:
+    def _calculate_average_priority(self, urls: List[Element]) -> float:
         """Calculate average priority value"""
         priorities = []
         for url in urls:
@@ -656,7 +663,7 @@ class SitemapHandler(XMLHandler):
         
         return sum(priorities) / len(priorities) if priorities else 0.5
     
-    def _analyze_update_patterns(self, urls: List[ET.Element]) -> float:
+    def _analyze_update_patterns(self, urls: List[Element]) -> float:
         """Analyze consistency of update patterns"""
         # Simplified consistency score based on changefreq distribution
         changefreqs = self._analyze_changefreqs(urls)
@@ -667,7 +674,7 @@ class SitemapHandler(XMLHandler):
         # More consistent if fewer different frequencies are used
         return 1.0 - (len(changefreqs) - 1) / 6  # 6 is max reasonable changefreq types
     
-    def _assess_url_seo_friendliness(self, urls: List[ET.Element]) -> Dict[str, Any]:
+    def _assess_url_seo_friendliness(self, urls: List[Element]) -> Dict[str, Any]:
         """Assess SEO friendliness of URL structure"""
         seo_analysis = {
             'readable_urls': 0,
@@ -696,17 +703,17 @@ class SitemapHandler(XMLHandler):
         
         return seo_analysis
     
-    def _estimate_file_size(self, root: ET.Element) -> int:
+    def _estimate_file_size(self, root: Element) -> int:
         """Estimate file size in bytes"""
         # Rough estimation based on element count and average element size
         element_count = len(list(root.iter()))
         return element_count * 150  # Average 150 bytes per element
     
-    def _validate_namespace_usage(self, root: ET.Element) -> bool:
+    def _validate_namespace_usage(self, root: Element) -> bool:
         """Validate proper namespace usage"""
         return self.SITEMAP_NAMESPACE in root.tag or 'xmlns' in root.attrib
     
-    def _validate_schema_compliance(self, root: ET.Element, is_index: bool) -> Dict[str, Any]:
+    def _validate_schema_compliance(self, root: Element, is_index: bool) -> Dict[str, Any]:
         """Validate schema compliance"""
         compliance = {
             'required_elements_present': True,
@@ -721,7 +728,7 @@ class SitemapHandler(XMLHandler):
         
         return compliance
     
-    def _estimate_compression_savings(self, root: ET.Element) -> Dict[str, Any]:
+    def _estimate_compression_savings(self, root: Element) -> Dict[str, Any]:
         """Estimate compression savings"""
         estimated_size = self._estimate_file_size(root)
         return {
@@ -730,7 +737,7 @@ class SitemapHandler(XMLHandler):
             'estimated_savings': int(estimated_size * 0.9)
         }
     
-    def _analyze_priority_optimization(self, urls: List[ET.Element]) -> Dict[str, Any]:
+    def _analyze_priority_optimization(self, urls: List[Element]) -> Dict[str, Any]:
         """Analyze priority optimization"""
         priorities = self._analyze_priorities(urls)
         return {
@@ -739,7 +746,7 @@ class SitemapHandler(XMLHandler):
             'needs_optimization': len(set(priorities.keys())) <= 2
         }
     
-    def _analyze_changefreq_accuracy(self, urls: List[ET.Element]) -> Dict[str, Any]:
+    def _analyze_changefreq_accuracy(self, urls: List[Element]) -> Dict[str, Any]:
         """Analyze changefreq accuracy"""
         changefreqs = self._analyze_changefreqs(urls)
         return {
@@ -748,7 +755,7 @@ class SitemapHandler(XMLHandler):
             'most_common': max(changefreqs.items(), key=lambda x: x[1])[0] if changefreqs else None
         }
     
-    def _calculate_consistency_score(self, urls: List[ET.Element]) -> float:
+    def _calculate_consistency_score(self, urls: List[Element]) -> float:
         """Calculate consistency score"""
         # Check consistency of priority values and changefreq values
         priorities = self._analyze_priorities(urls)
@@ -760,7 +767,7 @@ class SitemapHandler(XMLHandler):
         
         return (priority_consistency + changefreq_consistency) / 2
     
-    def _calculate_best_practices_score(self, urls: List[ET.Element], total_urls: int) -> float:
+    def _calculate_best_practices_score(self, urls: List[Element], total_urls: int) -> float:
         """Calculate best practices compliance score"""
         score = 0.0
         
@@ -780,7 +787,7 @@ class SitemapHandler(XMLHandler):
         
         return score
     
-    def _check_url_validity(self, urls: List[ET.Element]) -> Dict[str, Any]:
+    def _check_url_validity(self, urls: List[Element]) -> Dict[str, Any]:
         """Check URL validity"""
         validity = {
             'valid_urls': 0,
@@ -802,7 +809,7 @@ class SitemapHandler(XMLHandler):
         
         return validity
     
-    def _count_https_urls(self, urls: List[ET.Element]) -> int:
+    def _count_https_urls(self, urls: List[Element]) -> int:
         """Count HTTPS URLs"""
         https_count = 0
         for url in urls:
@@ -812,7 +819,7 @@ class SitemapHandler(XMLHandler):
                     https_count += 1
         return https_count
     
-    def _extract_content_summary(self, root: ET.Element, is_index: bool) -> Dict[str, Any]:
+    def _extract_content_summary(self, root: Element, is_index: bool) -> Dict[str, Any]:
         """Extract content summary"""
         if is_index:
             sitemaps = root.findall(f'.//{{{self.SITEMAP_NAMESPACE}}}sitemap')
@@ -831,7 +838,7 @@ class SitemapHandler(XMLHandler):
                                         if url.find(f'.//{{{self.SITEMAP_NAMESPACE}}}loc') is not None))
             }
     
-    def _extract_seo_summary(self, root: ET.Element, is_index: bool) -> Dict[str, Any]:
+    def _extract_seo_summary(self, root: Element, is_index: bool) -> Dict[str, Any]:
         """Extract SEO summary"""
         if is_index:
             return {
@@ -850,7 +857,7 @@ class SitemapHandler(XMLHandler):
                 'average_priority': self._calculate_average_priority(urls)
             }
     
-    def _extract_technical_summary(self, root: ET.Element, is_index: bool) -> Dict[str, Any]:
+    def _extract_technical_summary(self, root: Element, is_index: bool) -> Dict[str, Any]:
         """Extract technical summary"""
         total_elements = len(list(root.iter()))
         

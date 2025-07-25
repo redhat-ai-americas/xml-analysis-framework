@@ -6,7 +6,7 @@ Handles very large XML files efficiently using iterative parsing
 instead of recursive analysis to avoid stack overflow.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from collections import defaultdict, deque
 import json
 import sys

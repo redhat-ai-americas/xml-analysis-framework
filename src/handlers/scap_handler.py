@@ -7,11 +7,18 @@ and security assessment reports for compliance monitoring and
 vulnerability analysis.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -22,7 +29,7 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class SCAPHandler(XMLHandler):
     """Handler for SCAP (Security Content Automation Protocol) documents"""
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         # Check for SCAP-specific namespaces and elements
         scap_namespace_patterns = [
             'http://scap.nist.gov/schema/',
@@ -64,7 +71,7 @@ class SCAPHandler(XMLHandler):
             
         return score >= 0.6, score
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         version = None
         schema_uri = None
         doc_type = "SCAP Security Report"
@@ -103,7 +110,7 @@ class SCAPHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {}
         data_inventory = {}
         
@@ -143,7 +150,7 @@ class SCAPHandler(XMLHandler):
             quality_metrics=self._calculate_quality_metrics(root)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         # Extract key SCAP data
         return {
             "scan_results": self._extract_scan_results(root),
@@ -151,27 +158,27 @@ class SCAPHandler(XMLHandler):
             "compliance_scores": self._extract_compliance_scores(root)
         }
     
-    def _count_vulnerabilities(self, root: ET.Element) -> Dict[str, int]:
+    def _count_vulnerabilities(self, root: Element) -> Dict[str, int]:
         # Implementation for counting vulnerabilities by severity
         return {"high": 0, "medium": 0, "low": 0}
     
-    def _extract_compliance_summary(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_compliance_summary(self, root: Element) -> Dict[str, Any]:
         # Implementation for extracting compliance summary
         return {}
     
-    def _extract_scan_results(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_scan_results(self, root: Element) -> List[Dict[str, Any]]:
         # Implementation for extracting scan results
         return []
     
-    def _extract_system_info(self, root: ET.Element) -> Dict[str, Any]:
+    def _extract_system_info(self, root: Element) -> Dict[str, Any]:
         # Implementation for extracting system information
         return {}
     
-    def _extract_compliance_scores(self, root: ET.Element) -> Dict[str, float]:
+    def _extract_compliance_scores(self, root: Element) -> Dict[str, float]:
         # Implementation for extracting compliance scores
         return {}
     
-    def _calculate_quality_metrics(self, root: ET.Element) -> Dict[str, float]:
+    def _calculate_quality_metrics(self, root: Element) -> Dict[str, float]:
         return {
             "completeness": 0.85,
             "consistency": 0.90,

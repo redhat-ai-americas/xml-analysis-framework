@@ -6,12 +6,19 @@ Analyzes JUnit and TestNG XML test report files to extract
 test execution results, failure patterns, and test metrics.
 """
 
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from xml.etree.ElementTree import Element
+else:
+    from typing import Any
+    Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -22,7 +29,7 @@ from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 class TestReportHandler(XMLHandler):
     """Handler for JUnit and TestNG test report XML files"""
     
-    def can_handle(self, root: ET.Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
+    def can_handle(self, root: Element, namespaces: Dict[str, str]) -> Tuple[bool, float]:
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
         # JUnit report indicators
@@ -44,7 +51,7 @@ class TestReportHandler(XMLHandler):
         
         return False, 0.0
     
-    def detect_type(self, root: ET.Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
+    def detect_type(self, root: Element, namespaces: Dict[str, str]) -> DocumentTypeInfo:
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
         # Determine test framework
@@ -73,7 +80,7 @@ class TestReportHandler(XMLHandler):
             }
         )
     
-    def analyze(self, root: ET.Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
         framework = self._determine_framework(root)
         
         if framework == "TestNG":
@@ -117,7 +124,7 @@ class TestReportHandler(XMLHandler):
             quality_metrics=self._assess_test_quality(findings)
         )
     
-    def extract_key_data(self, root: ET.Element) -> Dict[str, Any]:
+    def extract_key_data(self, root: Element) -> Dict[str, Any]:
         framework = self._determine_framework(root)
         
         return {
@@ -128,7 +135,7 @@ class TestReportHandler(XMLHandler):
             'error_categories': self._categorize_errors(root, framework)
         }
     
-    def _determine_framework(self, root: ET.Element) -> str:
+    def _determine_framework(self, root: Element) -> str:
         """Determine which test framework generated the report"""
         root_tag = root.tag.split('}')[-1] if '}' in root.tag else root.tag
         
@@ -139,7 +146,7 @@ class TestReportHandler(XMLHandler):
         else:
             return "Unknown"
     
-    def _analyze_junit(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_junit(self, root: Element) -> Dict[str, Any]:
         """Analyze JUnit test report"""
         findings = {
             'summary': {
@@ -242,7 +249,7 @@ class TestReportHandler(XMLHandler):
         
         return findings
     
-    def _analyze_testng(self, root: ET.Element) -> Dict[str, Any]:
+    def _analyze_testng(self, root: Element) -> Dict[str, Any]:
         """Analyze TestNG test report"""
         findings = {
             'summary': {
@@ -338,7 +345,7 @@ class TestReportHandler(XMLHandler):
         
         return findings
     
-    def _extract_test_summary(self, root: ET.Element, framework: str) -> Dict[str, Any]:
+    def _extract_test_summary(self, root: Element, framework: str) -> Dict[str, Any]:
         """Extract test execution summary"""
         if framework == "TestNG":
             return {
@@ -369,7 +376,7 @@ class TestReportHandler(XMLHandler):
             
             return summary
     
-    def _extract_failed_tests(self, root: ET.Element, framework: str) -> List[Dict[str, Any]]:
+    def _extract_failed_tests(self, root: Element, framework: str) -> List[Dict[str, Any]]:
         """Extract details of failed tests"""
         failed_tests = []
         
@@ -401,7 +408,7 @@ class TestReportHandler(XMLHandler):
         
         return failed_tests[:50]  # Limit to first 50
     
-    def _extract_slow_tests(self, root: ET.Element, framework: str, threshold: float = 1.0) -> List[Dict[str, Any]]:
+    def _extract_slow_tests(self, root: Element, framework: str, threshold: float = 1.0) -> List[Dict[str, Any]]:
         """Extract slow-running tests"""
         slow_tests = []
         
@@ -430,7 +437,7 @@ class TestReportHandler(XMLHandler):
         
         return slow_tests[:20]  # Top 20 slowest
     
-    def _calculate_test_metrics(self, root: ET.Element, framework: str) -> Dict[str, Any]:
+    def _calculate_test_metrics(self, root: Element, framework: str) -> Dict[str, Any]:
         """Calculate various test metrics"""
         metrics = {
             'success_rate': 0.0,
@@ -501,7 +508,7 @@ class TestReportHandler(XMLHandler):
         
         return metrics
     
-    def _categorize_errors(self, root: ET.Element, framework: str) -> Dict[str, List[Dict[str, Any]]]:
+    def _categorize_errors(self, root: Element, framework: str) -> Dict[str, List[Dict[str, Any]]]:
         """Categorize test failures by error type"""
         error_categories = {
             'assertion_errors': [],
@@ -600,7 +607,7 @@ class TestReportHandler(XMLHandler):
             "overall": (success_rate + stability + performance + maintenance + flakiness_score) / 5
         }
     
-    def _get_child_text(self, parent: ET.Element, child_name: str, default: str = None) -> Optional[str]:
+    def _get_child_text(self, parent: Element, child_name: str, default: str = None) -> Optional[str]:
         """Get text content of a child element"""
         if parent is None:
             return default

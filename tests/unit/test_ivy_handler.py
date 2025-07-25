@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from handlers.ivy_handler import IvyHandler
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 
 def test_ivy_handler():
     """Test Ivy handler with synthetic test files"""
