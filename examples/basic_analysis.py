@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent / "src"))
 
 try:
-    from src.core.analyzer import XMLSchemaAnalyzer, analyze_xml_file
+    from core.schema_analyzer import XMLSchemaAnalyzer
 except ImportError as e:
     print(f"Error: Could not import analyzer modules: {e}")
     print("Make sure the src/ directory contains the required files.")

@@ -15,8 +15,9 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent / "src"))
 
 try:
-    from src.core.analyzer import XMLDocumentAnalyzer, XMLSchemaAnalyzer
-    from src.core.chunking import ChunkingOrchestrator, ChunkingConfig
+    from core.analyzer import XMLDocumentAnalyzer
+    from core.schema_analyzer import XMLSchemaAnalyzer
+    from core.chunking import XMLChunkingStrategy
 except ImportError as e:
     print(f"Error: Could not import required modules: {e}")
     print("Make sure the src/ directory contains all required files.")
@@ -70,11 +71,10 @@ def analyze_file_enhanced(file_path):
         
         if should_chunk:
             print("📦 Large file detected, applying chunking strategy...")
-            orchestrator = ChunkingOrchestrator()
-            chunks = orchestrator.chunk_document(
+            chunker = XMLChunkingStrategy()
+            chunks = chunker.chunk_document(
                 str(file_path),
-                specialized_result,
-                strategy='auto'
+                specialized_result
             )
             print(f"✂️  Created {len(chunks)} chunks")
         

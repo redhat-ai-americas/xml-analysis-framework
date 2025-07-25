@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "xml-analysis-framework"
 dynamic = ["version"]
-description = "Comprehensive framework for analyzing XML documents with AI/ML processing support"
+description = "XML document analysis and preprocessing framework designed for AI/ML data pipelines"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [

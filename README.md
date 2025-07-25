@@ -6,7 +6,7 @@
 [![Handlers](https://img.shields.io/badge/Specialized%20Handlers-29-blue.svg)](./src/handlers)
 [![AI Ready](https://img.shields.io/badge/AI%20Ready-✓-green.svg)](./AI_INTEGRATION_ARCHITECTURE.md)
 
-A production-ready framework for analyzing XML documents with **29 specialized handlers** and intelligent AI integration capabilities. Transform any XML document into structured, AI-ready data with **100% success rate** across 71 diverse test files.
+A production-ready XML document analysis and preprocessing framework with **29 specialized handlers** designed for AI/ML data pipelines. Transform any XML document into structured, AI-ready data and optimized chunks with **100% success rate** across 71 diverse test files.
 
 ## 🚀 Quick Start
 
@@ -31,49 +31,43 @@ analysis = analyzer.analyze_document("path/to/file.xml")
 
 ### Smart Chunking
 ```python
-from core.chunking import ChunkingOrchestrator, ChunkingConfig
+from core.chunking import ChunkingOrchestrator
 
 orchestrator = ChunkingOrchestrator()
 
-# Convert analysis for chunking (required format)
-chunking_analysis = {
-    "document_type": {
-        "type_name": analysis["document_type"].type_name,
-        "confidence": analysis["document_type"].confidence
-    },
-    "analysis": analysis["analysis"]
-}
-
-# Perform chunking
+# Automatic strategy selection with analysis context
 chunks = orchestrator.chunk_document(
     file_path="path/to/file.xml",
-    specialized_analysis=chunking_analysis,
+    specialized_analysis=analysis,  # Pass the full analysis result
     strategy='auto'  # or 'hierarchical', 'sliding_window', 'content_aware'
 )
 ```
 
 ### Complete Workflow
 ```python
+from core.analyzer import XMLDocumentAnalyzer
+from core.chunking import ChunkingOrchestrator, XMLChunkingStrategy
+
 # 1. Analyze document
 analyzer = XMLDocumentAnalyzer()
 analysis = analyzer.analyze_document("file.xml")
 
-# 2. Convert to chunking format
+# 2. Generate optimal chunks (convert analysis format for chunking)
 chunking_analysis = {
-    "document_type": {
-        "type_name": analysis["document_type"].type_name,
-        "confidence": analysis["document_type"].confidence
+    'document_type': {
+        'type_name': analysis['document_type'].type_name,
+        'confidence': analysis['document_type'].confidence
     },
-    "analysis": analysis["analysis"]
+    'analysis': analysis['analysis']
 }
-
-# 3. Generate optimal chunks
 orchestrator = ChunkingOrchestrator()
-chunks = orchestrator.chunk_document("file.xml", chunking_analysis)
+chunks = orchestrator.chunk_document("file.xml", chunking_analysis, strategy='auto')
 
-# 4. Process results
+# 3. Process results (use base strategy for token estimation)
+token_estimator = XMLChunkingStrategy()
 for chunk in chunks:
-    print(f"Chunk {chunk.chunk_id}: {chunk.token_estimate} tokens")
+    token_count = token_estimator.estimate_tokens(chunk.content)
+    print(f"Chunk {chunk.chunk_id}: ~{token_count} tokens")
     print(f"Content: {chunk.content[:100]}...")
 ```
 
@@ -184,37 +178,46 @@ pip install -e .[dev]
 
 ### Basic Analysis
 ```python
-from src.core.schema_analyzer import XMLSchemaAnalyzer
+from core.schema_analyzer import XMLSchemaAnalyzer
 
 analyzer = XMLSchemaAnalyzer()
 schema = analyzer.analyze_file('document.xml')
-print(analyzer.generate_llm_description(schema))
+
+# Access schema properties
+print(f"Root element: {schema.root_element}")
+print(f"Total elements: {schema.total_elements}")
+print(f"Namespaces: {schema.namespaces}")
 ```
 
 ### Enhanced Analysis with Specialized Handlers
 ```python
-from src.core.analyzer import XMLDocumentAnalyzer
+from core.analyzer import XMLDocumentAnalyzer
 
 analyzer = XMLDocumentAnalyzer()
 result = analyzer.analyze_document('maven-project.xml')
 
-print(f"Document Type: {result.document_type.type_name}")
-print(f"Confidence: {result.document_type.confidence:.2f}")
-print(f"AI Use Cases: {result.analysis.ai_use_cases}")
+print(f"Document Type: {result['document_type'].type_name}")
+print(f"Confidence: {result['confidence']:.2f}")
+print(f"Handler Used: {result['handler_used']}")
+print(f"AI Use Cases: {result['analysis'].ai_use_cases}")
 ```
 
 ### Intelligent Chunking
 ```python
-from src.core.chunking import ChunkingOrchestrator
+from core.chunking import ChunkingOrchestrator, XMLChunkingStrategy
 
 orchestrator = ChunkingOrchestrator()
 chunks = orchestrator.chunk_document(
     'large_document.xml',
-    strategy='auto'  # Automatically selects best strategy
+    specialized_analysis={},  # Analysis result from XMLDocumentAnalyzer
+    strategy='auto'
 )
 
+# Token estimation
+token_estimator = XMLChunkingStrategy()
 for chunk in chunks:
-    print(f"Chunk {chunk.chunk_id}: ~{chunk.token_estimate} tokens")
+    token_count = token_estimator.estimate_tokens(chunk.content)
+    print(f"Chunk {chunk.chunk_id}: ~{token_count} tokens")
 ```
 
 ## 🧪 Testing & Validation
@@ -312,28 +315,40 @@ graph LR
 
 ### Adding New Handlers
 ```python
-from src.core.analyzer import XMLHandler, SpecializedAnalysis
+from core.analyzer import XMLHandler, SpecializedAnalysis, DocumentTypeInfo
 
 class CustomHandler(XMLHandler):
     def can_handle(self, root, namespaces):
         return root.tag == 'custom-format', 1.0
     
+    def detect_type(self, root, namespaces):
+        return DocumentTypeInfo(
+            type_name="Custom Format",
+            confidence=1.0,
+            version="1.0"
+        )
+    
     def analyze(self, root, file_path):
         return SpecializedAnalysis(
             document_type="Custom Format",
-            key_findings={...},
-            ai_use_cases=["Custom AI application"]
+            key_findings={"custom_data": "value"},
+            ai_use_cases=["Custom AI application"],
+            structured_data={"extracted": "data"}
         )
 ```
 
 ### Custom Chunking Strategies
 ```python
-from src.core.chunking import XMLChunkingStrategy
+from core.chunking import XMLChunkingStrategy, ChunkingOrchestrator
 
 class CustomChunking(XMLChunkingStrategy):
-    def chunk_document(self, file_path, analysis_result):
+    def chunk_document(self, file_path, specialized_analysis=None):
         # Custom chunking logic
         return chunks
+
+# Register custom strategy
+orchestrator = ChunkingOrchestrator()
+orchestrator.strategies['custom'] = CustomChunking
 ```
 
 ## 📊 Real Production Output Examples

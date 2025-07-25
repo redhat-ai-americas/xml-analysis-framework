@@ -13,10 +13,10 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="xml-analysis-framework",
-    version="1.0.0",
+    version="1.1.0",
     author="AI Building Blocks",
     author_email="wjackson@example.com",
-    description="Comprehensive framework for analyzing XML documents with AI/ML processing support",
+    description="XML document analysis and preprocessing framework designed for AI/ML data pipelines",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/wjackson/xml-analysis-framework",
