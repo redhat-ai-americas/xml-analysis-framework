@@ -13,7 +13,7 @@ A production-ready XML document analysis and preprocessing framework with **29 s
 ### Document Analysis
 
 ```python
-from src.core.analyzer import XMLDocumentAnalyzer
+from core.analyzer import XMLDocumentAnalyzer
 
 analyzer = XMLDocumentAnalyzer()
 analysis = analyzer.analyze_document("path/to/file.xml")
@@ -33,8 +33,8 @@ analysis = analyzer.analyze_document("path/to/file.xml")
 ### Smart Chunking
 
 ```python
-from src.core.analyzer import XMLDocumentAnalyzer
-from src.core.chunking import ChunkingOrchestrator
+from core.analyzer import XMLDocumentAnalyzer
+from core.chunking import ChunkingOrchestrator
 
 # First get analysis
 analyzer = XMLDocumentAnalyzer()
@@ -61,8 +61,8 @@ chunks = orchestrator.chunk_document(
 ### Complete Workflow
 
 ```python
-from src.core.analyzer import XMLDocumentAnalyzer
-from src.core.chunking import ChunkingOrchestrator, XMLChunkingStrategy
+from core.analyzer import XMLDocumentAnalyzer
+from core.chunking import ChunkingOrchestrator, XMLChunkingStrategy
 
 # 1. Analyze document
 analyzer = XMLDocumentAnalyzer()
@@ -160,8 +160,7 @@ xml-analysis-framework/
 │
 ├── examples/                   # Usage examples
 │   ├── basic_analysis.py      # Simple analysis
-│   ├── enhanced_analysis.py   # Full featured analysis
-│   └── framework_demo.py      # Complete demonstration
+│   └── enhanced_analysis.py   # Full featured analysis
 │
 ├── scripts/                    # Utility scripts
 │   ├── collect_test_files.py  # Test data collection
@@ -195,7 +194,7 @@ This framework uses **defusedxml** to protect against common XML security vulner
 
 ```python
 # All XML parsing is automatically protected
-from src.core.analyzer import XMLDocumentAnalyzer
+from core.analyzer import XMLDocumentAnalyzer
 
 analyzer = XMLDocumentAnalyzer()
 # Safe parsing - malicious XML will be rejected
@@ -218,8 +217,8 @@ The framework includes built-in file size limits to prevent memory exhaustion:
 
 ```python
 # Built-in size limits in analyzer and chunking
-from src.core.analyzer import XMLDocumentAnalyzer
-from src.core.chunking import ChunkingOrchestrator
+from core.analyzer import XMLDocumentAnalyzer
+from core.chunking import ChunkingOrchestrator
 
 # Create analyzer with 50MB limit
 analyzer = XMLDocumentAnalyzer(max_file_size_mb=50.0)
@@ -257,7 +256,7 @@ pip install -e .[dev]
 ### Basic Analysis
 
 ```python
-from src.core.schema_analyzer import XMLSchemaAnalyzer
+from core.schema_analyzer import XMLSchemaAnalyzer
 
 analyzer = XMLSchemaAnalyzer()
 schema = analyzer.analyze_file('document.xml')
@@ -271,7 +270,7 @@ print(f"Namespaces: {schema.namespaces}")
 ### Enhanced Analysis with Specialized Handlers
 
 ```python
-from src.core.analyzer import XMLDocumentAnalyzer
+from core.analyzer import XMLDocumentAnalyzer
 
 analyzer = XMLDocumentAnalyzer()
 result = analyzer.analyze_document('maven-project.xml')
@@ -302,7 +301,7 @@ else:
 ### Intelligent Chunking
 
 ```python
-from src.core.chunking import ChunkingOrchestrator, XMLChunkingStrategy
+from core.chunking import ChunkingOrchestrator, XMLChunkingStrategy
 
 orchestrator = ChunkingOrchestrator()
 chunks = orchestrator.chunk_document(
@@ -423,7 +422,7 @@ graph LR
 ### Adding New Handlers
 
 ```python
-from src.core.analyzer import XMLHandler, SpecializedAnalysis, DocumentTypeInfo
+from core.analyzer import XMLHandler, SpecializedAnalysis, DocumentTypeInfo
 
 class CustomHandler(XMLHandler):
     def can_handle(self, root, namespaces):
@@ -448,7 +447,7 @@ class CustomHandler(XMLHandler):
 ### Custom Chunking Strategies
 
 ```python
-from src.core.chunking import XMLChunkingStrategy, ChunkingOrchestrator
+from core.chunking import XMLChunkingStrategy, ChunkingOrchestrator
 
 class CustomChunking(XMLChunkingStrategy):
     def chunk_document(self, file_path, specialized_analysis=None):

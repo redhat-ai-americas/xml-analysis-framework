@@ -118,7 +118,7 @@ Handles [XML format description] documents.
 Common file patterns: *.xml, *.specific_extension
 """
 
-# ET import removed - not used in this handler
+import xml.etree.ElementTree as ET
 from typing import Dict, List, Optional, Any, Tuple
 from ..base import DocumentTypeInfo, SpecializedAnalysis, XMLHandler
 
@@ -209,7 +209,7 @@ Help us maintain our 100% success rate:
    black --check src/ tests/
    
    # Test with real XML files
-   python examples/framework_demo.py
+   python demo_xml_framework.py
    ```
 
 4. **Commit with Clear Messages**:
