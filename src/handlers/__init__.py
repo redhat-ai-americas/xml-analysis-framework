@@ -52,7 +52,6 @@ ALL_HANDLERS = [
     # Security and compliance
     SCAPHandler,
     SAMLHandler,
-    
     # Build tools and frameworks
     MavenPOMHandler,
     SpringConfigHandler,
@@ -60,134 +59,128 @@ ALL_HANDLERS = [
     IvyHandler,
     Log4jConfigHandler,
     StrutsConfigHandler,
-    
     # Enterprise configuration
     EnterpriseConfigHandler,
     PropertiesXMLHandler,
     HibernateHandler,
-    
     # IT Service Management
     ServiceNowHandler,
-    
     # Business process and workflow
     BPMNHandler,
-    
     # Web services and APIs
     WSDLHandler,
     OpenAPIXMLHandler,
     SOAPEnvelopeHandler,
     WADLHandler,
-    
     # Content and documentation
     RSSHandler,
     DocBookHandler,
     SitemapHandler,
-    
     # Web content
     XHTMLHandler,
-    
     # Geographic and mapping
     KMLHandler,
     GPXHandler,
-    
     # Graphics and media
     SVGHandler,
-    
     # Network and graph data
     GraphMLHandler,
-    
     # Translation/localization
     XLIFFHandler,
-    
     # Testing
     TestReportHandler,
-    
     # Schemas and definitions
     XSDSchemaHandler,
-    
     # Fallback (always last)
     GenericXMLHandler,
 ]
 
 # Categorized handlers for easier management
 HANDLER_CATEGORIES = {
-    'security': [SCAPHandler, SAMLHandler],
-    'build_tools': [MavenPOMHandler, AntBuildHandler, IvyHandler],
-    'frameworks': [SpringConfigHandler, Log4jConfigHandler, StrutsConfigHandler],
-    'web_services': [WSDLHandler, OpenAPIXMLHandler, SOAPEnvelopeHandler, WADLHandler],
-    'business_process': [BPMNHandler],
-    'enterprise_config': [EnterpriseConfigHandler, PropertiesXMLHandler, HibernateHandler],
-    'it_service_management': [ServiceNowHandler],
-    'content': [RSSHandler, DocBookHandler, SitemapHandler],
-    'web_content': [XHTMLHandler],
-    'geographic': [KMLHandler, GPXHandler],
-    'graphics': [SVGHandler],
-    'network_data': [GraphMLHandler],
-    'localization': [XLIFFHandler],
-    'schemas': [XSDSchemaHandler],
-    'testing': [TestReportHandler],
-    'fallback': [GenericXMLHandler]
+    "security": [SCAPHandler, SAMLHandler],
+    "build_tools": [MavenPOMHandler, AntBuildHandler, IvyHandler],
+    "frameworks": [SpringConfigHandler, Log4jConfigHandler, StrutsConfigHandler],
+    "web_services": [WSDLHandler, OpenAPIXMLHandler, SOAPEnvelopeHandler, WADLHandler],
+    "business_process": [BPMNHandler],
+    "enterprise_config": [
+        EnterpriseConfigHandler,
+        PropertiesXMLHandler,
+        HibernateHandler,
+    ],
+    "it_service_management": [ServiceNowHandler],
+    "content": [RSSHandler, DocBookHandler, SitemapHandler],
+    "web_content": [XHTMLHandler],
+    "geographic": [KMLHandler, GPXHandler],
+    "graphics": [SVGHandler],
+    "network_data": [GraphMLHandler],
+    "localization": [XLIFFHandler],
+    "schemas": [XSDSchemaHandler],
+    "testing": [TestReportHandler],
+    "fallback": [GenericXMLHandler],
 }
 
 # Export handler classes and utilities
 __all__ = [
-    'ALL_HANDLERS',
-    'HANDLER_CATEGORIES',
-    'get_handlers_by_category',
-    'get_handler_categories', 
-    'get_handler_info',
-    'find_handler_by_name',
-    'SCAPHandler',
-    'RSSHandler',
-    'MavenPOMHandler',
-    'SpringConfigHandler',
-    'AntBuildHandler',
-    'SOAPEnvelopeHandler',
-    'SAMLHandler',
-    'HibernateHandler',
-    'IvyHandler',
-    'Log4jConfigHandler',
-    'SVGHandler',
-    'DocBookHandler',
-    'SitemapHandler',
-    'KMLHandler',
-    'GPXHandler',
-    'XHTMLHandler',
-    'WADLHandler',
-    'StrutsConfigHandler',
-    'GraphMLHandler',
-    'XLIFFHandler',
-    'GenericXMLHandler',
-    'BPMNHandler',
-    'EnterpriseConfigHandler',
-    'OpenAPIXMLHandler',
-    'PropertiesXMLHandler',
-    'TestReportHandler',
-    'WSDLHandler',
-    'XSDSchemaHandler',
-    'ServiceNowHandler',
+    "ALL_HANDLERS",
+    "HANDLER_CATEGORIES",
+    "get_handlers_by_category",
+    "get_handler_categories",
+    "get_handler_info",
+    "find_handler_by_name",
+    "SCAPHandler",
+    "RSSHandler",
+    "MavenPOMHandler",
+    "SpringConfigHandler",
+    "AntBuildHandler",
+    "SOAPEnvelopeHandler",
+    "SAMLHandler",
+    "HibernateHandler",
+    "IvyHandler",
+    "Log4jConfigHandler",
+    "SVGHandler",
+    "DocBookHandler",
+    "SitemapHandler",
+    "KMLHandler",
+    "GPXHandler",
+    "XHTMLHandler",
+    "WADLHandler",
+    "StrutsConfigHandler",
+    "GraphMLHandler",
+    "XLIFFHandler",
+    "GenericXMLHandler",
+    "BPMNHandler",
+    "EnterpriseConfigHandler",
+    "OpenAPIXMLHandler",
+    "PropertiesXMLHandler",
+    "TestReportHandler",
+    "WSDLHandler",
+    "XSDSchemaHandler",
+    "ServiceNowHandler",
 ]
+
 
 # Handler Registry Utilities
 def get_handlers_by_category(category: str) -> List:
     """Get all handlers in a specific category"""
     return HANDLER_CATEGORIES.get(category, [])
 
+
 def get_handler_categories() -> List[str]:
     """Get list of all handler categories"""
     return list(HANDLER_CATEGORIES.keys())
 
+
 def get_handler_info() -> Dict[str, Any]:
     """Get comprehensive information about the handler registry"""
     return {
-        'total_handlers': len(ALL_HANDLERS),
-        'categories': len(HANDLER_CATEGORIES),
-        'handlers_by_category': {
-            category: len(handlers) 
-            for category, handlers in HANDLER_CATEGORIES.items()
+        "total_handlers": len(ALL_HANDLERS),
+        "categories": len(HANDLER_CATEGORIES),
+        "handlers_by_category": {
+            category: len(handlers) for category, handlers in HANDLER_CATEGORIES.items()
         },
-        'handler_names': [handler.__name__ for handler in ALL_HANDLERS]
+        "handler_names": [handler.__name__ for handler in ALL_HANDLERS],
     }
+
 
 def find_handler_by_name(name: str):
     """Find a handler class by name"""

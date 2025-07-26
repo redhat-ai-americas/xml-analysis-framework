@@ -118,7 +118,7 @@ Handles [XML format description] documents.
 Common file patterns: *.xml, *.specific_extension
 """
 
-import defusedxml.ElementTree as ET
+# ET import removed - not used in this handler
 from typing import Dict, List, Optional, Any, Tuple
 from ..base import DocumentTypeInfo, SpecializedAnalysis, XMLHandler
 

@@ -39,7 +39,7 @@ All XML parsing in the framework uses defusedxml:
 
 ```python
 # Safe - uses defusedxml
-import defusedxml.ElementTree as ET
+# ET import removed - not used in this handler
 tree = ET.parse(file_path)
 
 # NEVER use standard library directly
