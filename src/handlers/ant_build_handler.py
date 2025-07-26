@@ -23,13 +23,13 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 
 
 class AntBuildHandler(XMLHandler):
     """Handler for Apache Ant build.xml files"""
 
-    def can_handle(
+    def can_handle_xml(
         self, root: Element, namespaces: Dict[str, str]
     ) -> Tuple[bool, float]:
         # Check for Ant project root element
@@ -61,7 +61,7 @@ class AntBuildHandler(XMLHandler):
 
         return False, 0.0
 
-    def detect_type(
+    def detect_xml_type(
         self, root: Element, namespaces: Dict[str, str]
     ) -> DocumentTypeInfo:
         project_name = root.get("name", "unknown")
@@ -100,7 +100,7 @@ class AntBuildHandler(XMLHandler):
             metadata=metadata,
         )
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             "project_info": self._extract_project_info(root),
             "targets": self._analyze_targets(root),
@@ -147,11 +147,11 @@ class AntBuildHandler(XMLHandler):
             recommendations=recommendations,
             data_inventory=data_inventory,
             ai_use_cases=ai_use_cases,
-            structured_data=self.extract_key_data(root),
+            structured_data=self.extract_xml_key_data(root),
             quality_metrics=self._assess_build_quality(findings),
         )
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             "project_metadata": {
                 "name": root.get("name"),

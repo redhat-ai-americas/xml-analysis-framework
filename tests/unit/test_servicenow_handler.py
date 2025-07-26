@@ -93,14 +93,14 @@ class TestServiceNowHandler(unittest.TestCase):
     
     def test_can_handle(self):
         """Test document type detection"""
-        can_handle, confidence = self.handler.can_handle(self.root, self.namespaces)
+        can_handle, confidence = self.handler.can_handle_xml(self.root, self.namespaces)
         
         self.assertTrue(can_handle)
         self.assertGreater(confidence, 0.7)
     
     def test_detect_type(self):
         """Test ServiceNow type detection"""
-        type_info = self.handler.detect_type(self.root, self.namespaces)
+        type_info = self.handler.detect_xml_type(self.root, self.namespaces)
         
         self.assertEqual(type_info.type_name, "ServiceNow Incident")
         self.assertGreater(type_info.confidence, 0.9)
@@ -110,7 +110,7 @@ class TestServiceNowHandler(unittest.TestCase):
     
     def test_extract_key_data(self):
         """Test key data extraction"""
-        data = self.handler.extract_key_data(self.root)
+        data = self.handler.extract_xml_key_data(self.root)
         
         # Test ticket info extraction
         self.assertIn('ticket_info', data)
@@ -144,7 +144,7 @@ class TestServiceNowHandler(unittest.TestCase):
     
     def test_analyze(self):
         """Test comprehensive analysis"""
-        analysis = self.handler.analyze(self.root, 'test.xml')
+        analysis = self.handler.analyze_xml(self.root, 'test.xml')
         
         # Check findings
         self.assertIn('record_type', analysis.key_findings)
@@ -207,7 +207,7 @@ class TestServiceNowHandler(unittest.TestCase):
 </unload>"""
         
         root = ET.fromstring(minimal_xml)
-        can_handle, confidence = self.handler.can_handle(root, {})
+        can_handle, confidence = self.handler.can_handle_xml(root, {})
         
         self.assertTrue(can_handle)
         self.assertGreater(confidence, 0.5)
@@ -228,7 +228,7 @@ class TestServiceNowHandler(unittest.TestCase):
 </unload>"""
         
         root = ET.fromstring(problem_xml)
-        type_info = self.handler.detect_type(root, {})
+        type_info = self.handler.detect_xml_type(root, {})
         
         self.assertEqual(type_info.type_name, "ServiceNow Problem")
         self.assertEqual(type_info.metadata['primary_record_type'], 'problem')

@@ -25,13 +25,13 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 
 
 class MavenPOMHandler(XMLHandler):
     """Handler for Maven Project Object Model (POM) files"""
 
-    def can_handle(
+    def can_handle_xml(
         self, root: Element, namespaces: Dict[str, str]
     ) -> Tuple[bool, float]:
         # Check if root is 'project' and has Maven namespace
@@ -46,7 +46,7 @@ class MavenPOMHandler(XMLHandler):
                 return True, 0.8
         return False, 0.0
 
-    def detect_type(
+    def detect_xml_type(
         self, root: Element, namespaces: Dict[str, str]
     ) -> DocumentTypeInfo:
         pom_version = root.find(".//modelVersion")
@@ -60,7 +60,7 @@ class MavenPOMHandler(XMLHandler):
             metadata={"build_tool": "Maven", "category": "build_configuration"},
         )
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             "project_info": self._extract_project_info(root),
             "dependencies": self._analyze_dependencies(root),
@@ -96,11 +96,11 @@ class MavenPOMHandler(XMLHandler):
             recommendations=recommendations,
             data_inventory=data_inventory,
             ai_use_cases=ai_use_cases,
-            structured_data=self.extract_key_data(root),
+            structured_data=self.extract_xml_key_data(root),
             quality_metrics=self._calculate_pom_quality(findings),
         )
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             "coordinates": {
                 "groupId": getattr(root.find(".//groupId"), "text", None),

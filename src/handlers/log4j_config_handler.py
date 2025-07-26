@@ -23,13 +23,13 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 
 
 class Log4jConfigHandler(XMLHandler):
     """Handler for Log4j XML configuration files"""
 
-    def can_handle(
+    def can_handle_xml(
         self, root: Element, namespaces: Dict[str, str]
     ) -> Tuple[bool, float]:
         # Log4j 1.x uses 'log4j:configuration'
@@ -51,7 +51,7 @@ class Log4jConfigHandler(XMLHandler):
 
         return False, 0.0
 
-    def detect_type(
+    def detect_xml_type(
         self, root: Element, namespaces: Dict[str, str]
     ) -> DocumentTypeInfo:
         version = "2.x" if root.tag == "Configuration" else "1.x"
@@ -75,7 +75,7 @@ class Log4jConfigHandler(XMLHandler):
             metadata=metadata,
         )
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
         is_v2 = root.tag == "Configuration"
 
         findings = {
@@ -131,11 +131,11 @@ class Log4jConfigHandler(XMLHandler):
             recommendations=recommendations,
             data_inventory=data_inventory,
             ai_use_cases=ai_use_cases,
-            structured_data=self.extract_key_data(root),
+            structured_data=self.extract_xml_key_data(root),
             quality_metrics=self._assess_logging_quality(findings),
         )
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
         is_v2 = root.tag == "Configuration"
 
         return {

@@ -24,13 +24,13 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 
 
 class SCAPHandler(XMLHandler):
     """Handler for SCAP (Security Content Automation Protocol) documents"""
 
-    def can_handle(
+    def can_handle_xml(
         self, root: Element, namespaces: Dict[str, str]
     ) -> Tuple[bool, float]:
         # Check for SCAP-specific namespaces and elements
@@ -74,7 +74,7 @@ class SCAPHandler(XMLHandler):
 
         return score >= 0.6, score
 
-    def detect_type(
+    def detect_xml_type(
         self, root: Element, namespaces: Dict[str, str]
     ) -> DocumentTypeInfo:
         version = None
@@ -119,7 +119,7 @@ class SCAPHandler(XMLHandler):
             },
         )
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {}
         data_inventory = {}
 
@@ -155,11 +155,11 @@ class SCAPHandler(XMLHandler):
             recommendations=recommendations,
             data_inventory=data_inventory,
             ai_use_cases=ai_use_cases,
-            structured_data=self.extract_key_data(root),
+            structured_data=self.extract_xml_key_data(root),
             quality_metrics=self._calculate_quality_metrics(root),
         )
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
         # Extract key SCAP data
         return {
             "scan_results": self._extract_scan_results(root),

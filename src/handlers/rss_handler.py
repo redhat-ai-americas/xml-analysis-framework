@@ -22,13 +22,13 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 
 
 class RSSHandler(XMLHandler):
     """Handler for RSS feed documents"""
 
-    def can_handle(
+    def can_handle_xml(
         self, root: Element, namespaces: Dict[str, str]
     ) -> Tuple[bool, float]:
         if root.tag == "rss" or root.tag.endswith("}rss"):
@@ -37,7 +37,7 @@ class RSSHandler(XMLHandler):
             return True, 0.9
         return False, 0.0
 
-    def detect_type(
+    def detect_xml_type(
         self, root: Element, namespaces: Dict[str, str]
     ) -> DocumentTypeInfo:
         version = root.get("version", "2.0")
@@ -50,7 +50,7 @@ class RSSHandler(XMLHandler):
             metadata={"standard": feed_type, "category": "content_syndication"},
         )
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
         channel = root.find(".//channel") or root
         items = root.findall(".//item") or root.findall(
             ".//{http://www.w3.org/2005/Atom}entry"
@@ -90,11 +90,11 @@ class RSSHandler(XMLHandler):
                 "categories": len(findings["categories"]),
             },
             ai_use_cases=ai_use_cases,
-            structured_data=self.extract_key_data(root),
+            structured_data=self.extract_xml_key_data(root),
             quality_metrics=self._calculate_feed_quality(root, items),
         )
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
         items = root.findall(".//item") or root.findall(
             ".//{http://www.w3.org/2005/Atom}entry"
         )

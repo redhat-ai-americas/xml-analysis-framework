@@ -23,13 +23,13 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 
 
 class WSDLHandler(XMLHandler):
     """Handler for WSDL (Web Services Description Language) documents"""
 
-    def can_handle(
+    def can_handle_xml(
         self, root: Element, namespaces: Dict[str, str]
     ) -> Tuple[bool, float]:
         # Check for WSDL root element
@@ -46,7 +46,7 @@ class WSDLHandler(XMLHandler):
 
         return False, 0.0
 
-    def detect_type(
+    def detect_xml_type(
         self, root: Element, namespaces: Dict[str, str]
     ) -> DocumentTypeInfo:
         # Determine WSDL version
@@ -70,7 +70,7 @@ class WSDLHandler(XMLHandler):
             },
         )
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
         # Determine version for proper parsing
         is_wsdl2 = root.tag.endswith("description") or "w3.org/ns/wsdl" in str(
             root.attrib.values()
@@ -113,11 +113,11 @@ class WSDLHandler(XMLHandler):
                 "bindings": len(findings.get("bindings", [])),
             },
             ai_use_cases=ai_use_cases,
-            structured_data=self.extract_key_data(root),
+            structured_data=self.extract_xml_key_data(root),
             quality_metrics=self._assess_wsdl_quality(findings),
         )
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
         is_wsdl2 = root.tag.endswith("description")
 
         if is_wsdl2:

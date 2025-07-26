@@ -24,7 +24,7 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 
 
 class KMLHandler(XMLHandler):
@@ -39,7 +39,7 @@ class KMLHandler(XMLHandler):
             return root.tag.split("}")[0] + "}"
         return ""
 
-    def can_handle(
+    def can_handle_xml(
         self, root: Element, namespaces: Dict[str, str]
     ) -> Tuple[bool, float]:
         # Check for KML namespace
@@ -69,7 +69,7 @@ class KMLHandler(XMLHandler):
 
         return False, 0.0
 
-    def detect_type(
+    def detect_xml_type(
         self, root: Element, namespaces: Dict[str, str]
     ) -> DocumentTypeInfo:
         # Detect KML version
@@ -101,7 +101,7 @@ class KMLHandler(XMLHandler):
             },
         )
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             "structure": self._analyze_structure(root),
             "placemarks": self._analyze_placemarks(root),
@@ -147,11 +147,11 @@ class KMLHandler(XMLHandler):
                 "overlays": findings["overlays"]["total"],
             },
             ai_use_cases=ai_use_cases,
-            structured_data=self.extract_key_data(root),
+            structured_data=self.extract_xml_key_data(root),
             quality_metrics=self._calculate_quality_metrics(findings),
         )
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             "geographic_bounds": self._extract_bounds(root),
             "feature_collection": self._extract_features(root),

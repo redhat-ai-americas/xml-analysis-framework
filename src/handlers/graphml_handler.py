@@ -25,7 +25,7 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 
 
 class GraphMLHandler(XMLHandler):
@@ -40,7 +40,7 @@ class GraphMLHandler(XMLHandler):
             return root.tag.split("}")[0] + "}"
         return ""
 
-    def can_handle(
+    def can_handle_xml(
         self, root: Element, namespaces: Dict[str, str]
     ) -> Tuple[bool, float]:
         # Check for GraphML namespace
@@ -75,7 +75,7 @@ class GraphMLHandler(XMLHandler):
 
         return False, 0.0
 
-    def detect_type(
+    def detect_xml_type(
         self, root: Element, namespaces: Dict[str, str]
     ) -> DocumentTypeInfo:
         # Detect GraphML version
@@ -156,7 +156,7 @@ class GraphMLHandler(XMLHandler):
             },
         )
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             "file_info": self._analyze_file_info(root),
             "graph_structure": self._analyze_graph_structure(root),
@@ -207,11 +207,11 @@ class GraphMLHandler(XMLHandler):
                 "data_elements": findings["data_properties"]["data_count"],
             },
             ai_use_cases=ai_use_cases,
-            structured_data=self.extract_key_data(root),
+            structured_data=self.extract_xml_key_data(root),
             quality_metrics=self._assess_graph_quality(findings),
         )
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             "graph_metadata": self._extract_graph_metadata(root),
             "node_catalog": self._extract_node_catalog(root),

@@ -127,59 +127,103 @@ class XMLHandler(FileHandler):
     - MediaHandler(FileHandler) for media files
     """
 
-    def can_handle(
-        self, root: Element, namespaces: Dict[str, str]
-    ) -> Tuple[bool, float]:
+    def can_handle(self, file_path: str, **kwargs) -> Tuple[bool, float]:
         """
         Check if this handler can process the XML document
 
         Args:
-            root: Root element of the parsed XML
-            namespaces: Detected namespaces in the document
+            file_path: Path to the file (not used in XML analysis)
+            **kwargs: Must include 'root' (Element) and 'namespaces' (Dict[str, str])
 
         Returns:
             (can_handle: bool, confidence: float)
         """
-        pass
+        root = kwargs.get("root")
+        namespaces = kwargs.get("namespaces", {})
+        if root is None:
+            return False, 0.0
+        return self.can_handle_xml(root, namespaces)
 
-    def detect_type(
-        self, root: Element, namespaces: Dict[str, str]
-    ) -> DocumentTypeInfo:
+    def detect_type(self, file_path: str, **kwargs) -> DocumentTypeInfo:
         """
         Detect and classify the XML document type
 
         Args:
-            root: Root element of the parsed XML
-            namespaces: Detected namespaces in the document
+            file_path: Path to the file (not used in XML analysis)
+            **kwargs: Must include 'root' (Element) and 'namespaces' (Dict[str, str])
 
         Returns:
             DocumentTypeInfo with classification details
         """
-        pass
+        root = kwargs.get("root")
+        namespaces = kwargs.get("namespaces", {})
+        if root is None:
+            return DocumentTypeInfo(type_name="Unknown", confidence=0.0)
+        return self.detect_xml_type(root, namespaces)
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze(self, file_path: str, **kwargs) -> SpecializedAnalysis:
         """
         Perform specialized analysis of the XML document
 
         Args:
-            root: Root element of the parsed XML
             file_path: Path to the original file
+            **kwargs: Must include 'root' (Element)
 
         Returns:
             SpecializedAnalysis with comprehensive insights
         """
-        pass
+        root = kwargs.get("root")
+        if root is None:
+            return SpecializedAnalysis(
+                document_type="Unknown",
+                key_findings={},
+                recommendations=[],
+                data_inventory={},
+                ai_use_cases=[],
+                structured_data={},
+                quality_metrics={},
+            )
+        return self.analyze_xml(root, file_path)
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_key_data(self, file_path: str, **kwargs) -> Dict[str, Any]:
         """
         Extract key structured data from the XML document
 
         Args:
-            root: Root element of the parsed XML
+            file_path: Path to the file (not used in XML analysis)
+            **kwargs: Must include 'root' (Element)
 
         Returns:
             Dictionary of extracted key data
         """
+        root = kwargs.get("root")
+        if root is None:
+            return {}
+        return self.extract_xml_key_data(root)
+
+    # XML-specific abstract methods that subclasses implement
+    @abstractmethod
+    def can_handle_xml(
+        self, root: Element, namespaces: Dict[str, str]
+    ) -> Tuple[bool, float]:
+        """XML-specific can_handle implementation"""
+        pass
+
+    @abstractmethod
+    def detect_xml_type(
+        self, root: Element, namespaces: Dict[str, str]
+    ) -> DocumentTypeInfo:
+        """XML-specific detect_type implementation"""
+        pass
+
+    @abstractmethod
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
+        """XML-specific analyze implementation"""
+        pass
+
+    @abstractmethod
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
+        """XML-specific extract_key_data implementation"""
         pass
 
 

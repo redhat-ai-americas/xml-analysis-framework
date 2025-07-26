@@ -23,13 +23,13 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 
 
 class XSDSchemaHandler(XMLHandler):
     """Handler for XML Schema Definition files"""
 
-    def can_handle(
+    def can_handle_xml(
         self, root: Element, namespaces: Dict[str, str]
     ) -> Tuple[bool, float]:
         # Check for schema elements
@@ -41,7 +41,7 @@ class XSDSchemaHandler(XMLHandler):
 
         return False, 0.0
 
-    def detect_type(
+    def detect_xml_type(
         self, root: Element, namespaces: Dict[str, str]
     ) -> DocumentTypeInfo:
         target_namespace = root.get("targetNamespace", "none")
@@ -69,7 +69,7 @@ class XSDSchemaHandler(XMLHandler):
             },
         )
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             "types": self._analyze_types(root),
             "elements": self._analyze_elements(root),
@@ -112,11 +112,11 @@ class XSDSchemaHandler(XMLHandler):
                 "validation_rules": len(findings["validation_rules"]),
             },
             ai_use_cases=ai_use_cases,
-            structured_data=self.extract_key_data(root),
+            structured_data=self.extract_xml_key_data(root),
             quality_metrics=self._assess_schema_quality(findings),
         )
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             "type_definitions": self._extract_type_definitions(root),
             "element_definitions": self._extract_element_definitions(root),

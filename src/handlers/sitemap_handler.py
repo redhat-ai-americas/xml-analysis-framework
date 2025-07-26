@@ -23,7 +23,7 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 
 
 class SitemapHandler(XMLHandler):
@@ -31,7 +31,7 @@ class SitemapHandler(XMLHandler):
 
     SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
 
-    def can_handle(
+    def can_handle_xml(
         self, root: Element, namespaces: Dict[str, str]
     ) -> Tuple[bool, float]:
         # Check for sitemap namespace
@@ -45,7 +45,7 @@ class SitemapHandler(XMLHandler):
 
         return False, 0.0
 
-    def detect_type(
+    def detect_xml_type(
         self, root: Element, namespaces: Dict[str, str]
     ) -> DocumentTypeInfo:
         tag = root.tag.split("}")[-1] if "}" in root.tag else root.tag
@@ -67,7 +67,7 @@ class SitemapHandler(XMLHandler):
             metadata=metadata,
         )
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
         tag = root.tag.split("}")[-1] if "}" in root.tag else root.tag
         is_index = tag == "sitemapindex"
 
@@ -157,11 +157,11 @@ class SitemapHandler(XMLHandler):
             recommendations=recommendations,
             data_inventory=data_inventory,
             ai_use_cases=ai_use_cases,
-            structured_data=self.extract_key_data(root),
+            structured_data=self.extract_xml_key_data(root),
             quality_metrics=self._assess_sitemap_quality(findings),
         )
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
         tag = root.tag.split("}")[-1] if "}" in root.tag else root.tag
         is_index = tag == "sitemapindex"
 

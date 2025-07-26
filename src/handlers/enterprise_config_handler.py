@@ -27,7 +27,7 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 
 
 class EnterpriseConfigHandler(XMLHandler):
@@ -71,7 +71,7 @@ class EnterpriseConfigHandler(XMLHandler):
         },
     }
 
-    def can_handle(
+    def can_handle_xml(
         self, root: Element, namespaces: Dict[str, str]
     ) -> Tuple[bool, float]:
         root_tag = root.tag.split("}")[-1] if "}" in root.tag else root.tag
@@ -126,7 +126,7 @@ class EnterpriseConfigHandler(XMLHandler):
 
         return False, 0.0
 
-    def detect_type(
+    def detect_xml_type(
         self, root: Element, namespaces: Dict[str, str]
     ) -> DocumentTypeInfo:
         root_tag = root.tag.split("}")[-1] if "}" in root.tag else root.tag
@@ -180,7 +180,7 @@ class EnterpriseConfigHandler(XMLHandler):
             },
         )
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
         config_type = self._determine_config_type(root)
 
         # Route to specific analysis based on type
@@ -219,11 +219,11 @@ class EnterpriseConfigHandler(XMLHandler):
             recommendations=recommendations,
             data_inventory=self._create_inventory(findings),
             ai_use_cases=ai_use_cases,
-            structured_data=self.extract_key_data(root),
+            structured_data=self.extract_xml_key_data(root),
             quality_metrics=self._assess_config_quality(findings),
         )
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
         config_type = self._determine_config_type(root)
 
         base_data = {

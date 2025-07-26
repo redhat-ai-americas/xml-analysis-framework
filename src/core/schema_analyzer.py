@@ -82,8 +82,8 @@ class XMLSchemaAnalyzer:
         # Use iterparse for memory-efficient parsing
         context = ET.iterparse(file_path, events=("start", "end", "start-ns"))
 
-        element_stack = []
-        path_stack = []
+        element_stack: List[Any] = []
+        path_stack: List[str] = []
         elements_processed = 0
         max_elements = 50000  # Limit analysis to prevent excessive processing
 

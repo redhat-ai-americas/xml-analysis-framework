@@ -23,7 +23,7 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 
 
 class SOAPEnvelopeHandler(XMLHandler):
@@ -33,7 +33,7 @@ class SOAPEnvelopeHandler(XMLHandler):
     SOAP_11_NS = "http://schemas.xmlsoap.org/soap/envelope/"
     SOAP_12_NS = "http://www.w3.org/2003/05/soap-envelope"
 
-    def can_handle(
+    def can_handle_xml(
         self, root: Element, namespaces: Dict[str, str]
     ) -> Tuple[bool, float]:
         # Check for SOAP Envelope root element
@@ -76,7 +76,7 @@ class SOAPEnvelopeHandler(XMLHandler):
 
         return False, 0.0
 
-    def detect_type(
+    def detect_xml_type(
         self, root: Element, namespaces: Dict[str, str]
     ) -> DocumentTypeInfo:
         # Determine SOAP version
@@ -116,7 +116,7 @@ class SOAPEnvelopeHandler(XMLHandler):
             metadata=metadata,
         )
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             "envelope_info": self._analyze_envelope(root),
             "headers": self._analyze_headers(root),
@@ -164,11 +164,11 @@ class SOAPEnvelopeHandler(XMLHandler):
             recommendations=recommendations,
             data_inventory=data_inventory,
             ai_use_cases=ai_use_cases,
-            structured_data=self.extract_key_data(root),
+            structured_data=self.extract_xml_key_data(root),
             quality_metrics=self._assess_message_quality(findings),
         )
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             "message_metadata": {
                 "version": self._get_soap_version(root),

@@ -33,13 +33,13 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 
 
 class ServiceNowHandler(XMLHandler):
     """Handler for ServiceNow export XML documents"""
 
-    def can_handle(
+    def can_handle_xml(
         self, root: Element, namespaces: Dict[str, str]
     ) -> Tuple[bool, float]:
         """Check if this is a ServiceNow export file"""
@@ -65,7 +65,7 @@ class ServiceNowHandler(XMLHandler):
 
         return score > 0.5, min(score, 1.0)
 
-    def detect_type(
+    def detect_xml_type(
         self, root: Element, namespaces: Dict[str, str]
     ) -> DocumentTypeInfo:
         """Detect ServiceNow document type and extract metadata"""
@@ -95,7 +95,7 @@ class ServiceNowHandler(XMLHandler):
             metadata=metadata,
         )
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
         """Perform comprehensive analysis of ServiceNow data"""
         findings = {}
 
@@ -127,11 +127,11 @@ class ServiceNowHandler(XMLHandler):
             recommendations=recommendations,
             data_inventory=self._create_data_inventory(root),
             ai_use_cases=ai_use_cases,
-            structured_data=self.extract_key_data(root),
+            structured_data=self.extract_xml_key_data(root),
             quality_metrics=self._calculate_quality_metrics(root),
         )
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
         """Extract structured data from ServiceNow export"""
         primary_record = self._get_primary_record(root)
 

@@ -24,13 +24,13 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 
 
 class TestReportHandler(XMLHandler):
     """Handler for JUnit and TestNG test report XML files"""
 
-    def can_handle(
+    def can_handle_xml(
         self, root: Element, namespaces: Dict[str, str]
     ) -> Tuple[bool, float]:
         root_tag = root.tag.split("}")[-1] if "}" in root.tag else root.tag
@@ -54,7 +54,7 @@ class TestReportHandler(XMLHandler):
 
         return False, 0.0
 
-    def detect_type(
+    def detect_xml_type(
         self, root: Element, namespaces: Dict[str, str]
     ) -> DocumentTypeInfo:
         root_tag = root.tag.split("}")[-1] if "}" in root.tag else root.tag
@@ -85,7 +85,7 @@ class TestReportHandler(XMLHandler):
             },
         )
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
         framework = self._determine_framework(root)
 
         if framework == "TestNG":
@@ -125,11 +125,11 @@ class TestReportHandler(XMLHandler):
                 "test_suites": len(findings.get("suites", [])),
             },
             ai_use_cases=ai_use_cases,
-            structured_data=self.extract_key_data(root),
+            structured_data=self.extract_xml_key_data(root),
             quality_metrics=self._assess_test_quality(findings),
         )
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
         framework = self._determine_framework(root)
 
         return {

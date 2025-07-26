@@ -25,7 +25,7 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.analyzer import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
 
 
 class WADLHandler(XMLHandler):
@@ -40,7 +40,7 @@ class WADLHandler(XMLHandler):
             return root.tag.split("}")[0] + "}"
         return ""
 
-    def can_handle(
+    def can_handle_xml(
         self, root: Element, namespaces: Dict[str, str]
     ) -> Tuple[bool, float]:
         # Check for WADL namespace
@@ -75,7 +75,7 @@ class WADLHandler(XMLHandler):
 
         return False, 0.0
 
-    def detect_type(
+    def detect_xml_type(
         self, root: Element, namespaces: Dict[str, str]
     ) -> DocumentTypeInfo:
         # Detect WADL version
@@ -116,7 +116,7 @@ class WADLHandler(XMLHandler):
             },
         )
 
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
+    def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
         findings = {
             "application_info": self._analyze_application(root),
             "resources": self._analyze_resources(root),
@@ -167,11 +167,11 @@ class WADLHandler(XMLHandler):
                 "documentation_coverage": findings["documentation"]["coverage_score"],
             },
             ai_use_cases=ai_use_cases,
-            structured_data=self.extract_key_data(root),
+            structured_data=self.extract_xml_key_data(root),
             quality_metrics=self._assess_api_quality(findings),
         )
 
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
+    def extract_xml_key_data(self, root: Element) -> Dict[str, Any]:
         return {
             "api_specification": self._extract_api_spec(root),
             "endpoint_catalog": self._extract_endpoints(root),
