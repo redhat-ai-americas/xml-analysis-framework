@@ -14,10 +14,10 @@ def test_imports():
     print("Testing imports...")
     
     try:
-        from xml_schema_analyzer_fixed import XMLSchemaAnalyzer
-        print("✅ xml_schema_analyzer_fixed imported successfully")
+        from core.schema_analyzer import XMLSchemaAnalyzer
+        print("✅ core.schema_analyzer imported successfully")
     except ImportError as e:
-        print(f"❌ Failed to import xml_schema_analyzer_fixed: {e}")
+        print(f"❌ Failed to import core.schema_analyzer: {e}")
         return False
     
     try:
@@ -28,17 +28,18 @@ def test_imports():
         return False
     
     try:
-        from xml_chunking_strategy import ChunkingOrchestrator
-        print("✅ xml_chunking_strategy imported successfully")
+        from core.chunking import ChunkingOrchestrator
+        print("✅ core.chunking imported successfully")
     except ImportError as e:
-        print(f"❌ Failed to import xml_chunking_strategy: {e}")
+        print(f"❌ Failed to import core.chunking: {e}")
         return False
     
     try:
-        from additional_xml_handlers import MavenPOMHandler, Log4jConfigHandler
-        print("✅ additional_xml_handlers imported successfully")
+        from handlers.maven_pom_handler import MavenPOMHandler
+        from handlers.log4j_config_handler import Log4jConfigHandler
+        print("✅ individual handlers imported successfully")
     except ImportError as e:
-        print(f"❌ Failed to import additional_xml_handlers: {e}")
+        print(f"❌ Failed to import individual handlers: {e}")
         return False
     
     return True

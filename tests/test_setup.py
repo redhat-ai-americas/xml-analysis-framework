@@ -12,7 +12,7 @@ sys.path.append(str(Path(__file__).parent / "src"))
 def test_imports():
     """Test that all required imports work"""
     try:
-        from xml_schema_analyzer_fixed import XMLSchemaAnalyzer, analyze_xml_file
+        from core.schema_analyzer import XMLSchemaAnalyzer
         print("✅ Imports successful")
         return True
     except Exception as e:
@@ -30,7 +30,7 @@ def test_sample_file():
         if Path(sample_file).exists():
             print(f"📄 Testing with {sample_file}")
             try:
-                from xml_schema_analyzer_fixed import XMLSchemaAnalyzer
+                from core.schema_analyzer import XMLSchemaAnalyzer
                 analyzer = XMLSchemaAnalyzer()
                 
                 # Quick test - just parse first 1000 lines to validate structure
