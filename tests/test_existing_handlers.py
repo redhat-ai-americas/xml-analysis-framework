@@ -13,13 +13,20 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 import traceback
 
-# Ensure we can import from the project root regardless of current working directory
-project_root = Path(__file__).parent.parent
-if str(project_root) not in sys.path:
-    sys.path.insert(0, str(project_root))
+# Get absolute paths
+test_file_path = Path(__file__).resolve()
+project_root = test_file_path.parent.parent
 
-# Also ensure the current directory includes the project root for relative imports
-os.chdir(project_root)
+# Add multiple possible paths to handle different execution contexts
+paths_to_add = [
+    str(project_root),  # Project root
+    str(project_root / "src"),  # Direct src path
+    str(test_file_path.parent.parent),  # Relative project root
+]
+
+for path in paths_to_add:
+    if path not in sys.path:
+        sys.path.insert(0, path)
 
 try:
     from src.core.analyzer import XMLDocumentAnalyzer

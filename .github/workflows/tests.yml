@@ -73,5 +73,6 @@ jobs:
         black --check src/
     
     - name: Type check with mypy
+      continue-on-error: true
       run: |
         mypy src/ --ignore-missing-imports

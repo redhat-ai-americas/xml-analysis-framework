@@ -7,23 +7,50 @@ import sys
 import os
 from pathlib import Path
 
-# Ensure we can import from the project root regardless of current working directory
-project_root = Path(__file__).parent.parent
-if str(project_root) not in sys.path:
-    sys.path.insert(0, str(project_root))
+# Get absolute paths
+test_file_path = Path(__file__).resolve()
+project_root = test_file_path.parent.parent
 
-# Also ensure the current directory includes the project root for relative imports
-os.chdir(project_root)
+# Try to detect if we're in an installed environment
+try:
+    # If this works, the package is installed
+    import xml_analysis_framework
+    PACKAGE_INSTALLED = True
+except ImportError:
+    PACKAGE_INSTALLED = False
+
+if not PACKAGE_INSTALLED:
+    # Add multiple possible paths to handle different execution contexts
+    paths_to_add = [
+        str(project_root),  # Project root
+        str(project_root / "src"),  # Direct src path
+        str(test_file_path.parent.parent),  # Relative project root
+    ]
+    
+    for path in paths_to_add:
+        if path not in sys.path:
+            sys.path.insert(0, path)
 
 def test_imports():
     """Test that all modules can be imported"""
     print("Testing imports...")
     
     try:
-        from src.core.schema_analyzer import XMLSchemaAnalyzer
+        # Try importing with src prefix first
+        try:
+            from src.core.schema_analyzer import XMLSchemaAnalyzer
+        except ImportError:
+            # If that fails, try without src prefix (when src is in path)
+            from core.schema_analyzer import XMLSchemaAnalyzer
         print("✅ core.schema_analyzer imported successfully")
     except ImportError as e:
         print(f"❌ Failed to import core.schema_analyzer: {e}")
+        print(f"❌ Error during testing: {e}")
+        # Print more debugging info for CI
+        import traceback
+        traceback.print_exc()
+        print(f"Current working directory: {os.getcwd()}")
+        print(f"sys.path: {sys.path[:5]}")
         return False
     
     try:
