@@ -97,7 +97,9 @@ class XMLDocumentAnalyzer:
         best_confidence = 0.0
 
         for handler in self.handlers:
-            can_handle, confidence = handler.can_handle(file_path, root=root, namespaces=namespaces)
+            can_handle, confidence = handler.can_handle(
+                file_path, root=root, namespaces=namespaces
+            )
             if can_handle and confidence > best_confidence:
                 best_handler = handler
                 best_confidence = confidence

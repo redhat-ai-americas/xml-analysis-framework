@@ -6,10 +6,16 @@ Test if the individual handler files work correctly.
 """
 
 import sys
+import os
 from pathlib import Path
 
-# Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+# Ensure we can import from the project root regardless of current working directory
+project_root = Path(__file__).parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+# Also ensure the current directory includes the project root for relative imports
+os.chdir(project_root)
 
 def test_individual_handlers():
     """Test if we can import individual handlers"""
@@ -17,11 +23,11 @@ def test_individual_handlers():
     print("-" * 40)
     
     handlers_to_test = [
-        ('SCAPHandler', 'handlers.scap_handler'),
-        ('RSSHandler', 'handlers.rss_handler'),
-        ('MavenPOMHandler', 'handlers.maven_pom_handler'),
-        ('SpringConfigHandler', 'handlers.spring_config_handler'),
-        ('GenericXMLHandler', 'handlers.generic_xml_handler'),
+        ('SCAPHandler', 'src.handlers.scap_handler'),
+        ('RSSHandler', 'src.handlers.rss_handler'),
+        ('MavenPOMHandler', 'src.handlers.maven_pom_handler'),
+        ('SpringConfigHandler', 'src.handlers.spring_config_handler'),
+        ('GenericXMLHandler', 'src.handlers.generic_xml_handler'),
     ]
     
     success_count = 0
@@ -48,7 +54,7 @@ def test_registry_import():
     print("-" * 40)
     
     try:
-        from handlers import ALL_HANDLERS, HANDLER_CATEGORIES
+        from src.handlers import ALL_HANDLERS, HANDLER_CATEGORIES
         print(f"  ✅ Registry imported successfully")
         print(f"  📊 {len(ALL_HANDLERS)} handlers in registry")
         print(f"  📂 {len(HANDLER_CATEGORIES)} categories defined")
@@ -76,7 +82,7 @@ def test_sample_analysis():
     
     try:
         # Import a specific handler directly
-        from handlers.rss_handler import RSSHandler
+        from src.handlers.rss_handler import RSSHandler
         
         # Test with RSS file
         rss_file = "../sample_data/test_files_synthetic/small/rss/sample-feed.xml"

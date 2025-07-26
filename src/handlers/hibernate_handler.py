@@ -674,7 +674,7 @@ class HibernateHandler(XMLHandler):
         if security_info["native_sql_queries"] > 0:
             security_info["security_risks"].append(
                 f'{security_info["native_sql_queries"]} native SQL queries found - '
-                f'review for injection risks'
+                f"review for injection risks"
             )
 
         # Check for dynamic insert/update

@@ -7,13 +7,19 @@ to ensure they work correctly before we begin migration.
 """
 
 import sys
+import os
 import json
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 import traceback
 
-# Add project root directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Ensure we can import from the project root regardless of current working directory
+project_root = Path(__file__).parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+# Also ensure the current directory includes the project root for relative imports
+os.chdir(project_root)
 
 try:
     from src.core.analyzer import XMLDocumentAnalyzer

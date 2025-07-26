@@ -4,10 +4,16 @@ Test script to verify the XML analysis framework is working correctly
 """
 
 import sys
+import os
 from pathlib import Path
 
-# Add project root directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Ensure we can import from the project root regardless of current working directory
+project_root = Path(__file__).parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+# Also ensure the current directory includes the project root for relative imports
+os.chdir(project_root)
 
 def test_imports():
     """Test that all modules can be imported"""
