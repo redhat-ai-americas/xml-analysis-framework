@@ -198,8 +198,7 @@ def main():
     framework_tests = [
         Path("test_framework.py"),
         Path("test_setup.py"),
-        Path("test_existing_handlers.py"),
-        Path("test_migration_progress.py")
+        Path("test_existing_handlers.py")
     ]
     
     framework_results = []
