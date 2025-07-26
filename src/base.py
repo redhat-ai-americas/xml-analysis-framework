@@ -11,15 +11,12 @@ allowing each to evolve independently without external dependencies.
 
 # ET import removed - not used in this handler
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any, Tuple, TYPE_CHECKING
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
-    from typing import Any
-
     Element = Any
 
 
@@ -234,27 +231,27 @@ class XMLHandler(FileHandler):
 class DocumentHandler(FileHandler):
     def can_handle(self, file_path: str, mime_type: str) -> Tuple[bool, float]:
         pass
-    
+
     def detect_type(self, file_path: str, mime_type: str) -> DocumentTypeInfo:
         pass
-    
+
     def analyze(self, file_path: str) -> SpecializedAnalysis:
         pass
-    
+
     def extract_key_data(self, file_path: str) -> Dict[str, Any]:
         pass
 
 # Data Analysis Framework would use:
-class DataHandler(FileHandler):  
+class DataHandler(FileHandler):
     def can_handle(self, file_path: str, sample_data: Any = None) -> Tuple[bool, float]:
         pass
-    
+
     def detect_type(self, file_path: str, sample_data: Any = None) -> DocumentTypeInfo:
         pass
-    
+
     def analyze(self, file_path: str) -> SpecializedAnalysis:
         pass
-    
+
     def extract_key_data(self, file_path: str) -> Dict[str, Any]:
         pass
 
@@ -262,13 +259,13 @@ class DataHandler(FileHandler):
 class MediaHandler(FileHandler):
     def can_handle(self, file_path: str, media_info: Dict = None) -> Tuple[bool, float]:
         pass
-    
+
     def detect_type(self, file_path: str, media_info: Dict = None) -> DocumentTypeInfo:
         pass
-    
+
     def analyze(self, file_path: str) -> SpecializedAnalysis:
         pass
-    
+
     def extract_key_data(self, file_path: str) -> Dict[str, Any]:
         pass
 """

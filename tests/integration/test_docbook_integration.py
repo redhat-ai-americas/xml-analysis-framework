@@ -14,7 +14,7 @@ def test_docbook_integration():
     """Test DocBook handler integration with main analyzer"""
     
     try:
-        from core.analyzer import XMLDocumentAnalyzer
+        from src.core.analyzer import XMLDocumentAnalyzer
         print("✅ XMLDocumentAnalyzer imported successfully")
     except ImportError as e:
         print(f"❌ Failed to import XMLDocumentAnalyzer: {e}")
@@ -22,7 +22,7 @@ def test_docbook_integration():
     
     # Test registry import
     try:
-        from handlers import ALL_HANDLERS, DocBookHandler
+        from src.handlers import ALL_HANDLERS, DocBookHandler
         print(f"✅ Handler registry imported successfully ({len(ALL_HANDLERS)} handlers)")
         
         # Check if DocBookHandler is in the registry

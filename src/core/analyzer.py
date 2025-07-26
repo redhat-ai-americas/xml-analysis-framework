@@ -13,72 +13,17 @@ Key features:
 """
 
 import defusedxml.ElementTree as ET
-from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Any, Tuple, TYPE_CHECKING
-from dataclasses import dataclass, field
+from typing import Dict, List, Optional, Any, TYPE_CHECKING
 from pathlib import Path
 import json
+
+# Note: Base classes imported by handlers through registry, not used directly here
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
     # For runtime, we'll use Any to avoid the import
     Element = Any
-
-
-@dataclass
-class DocumentTypeInfo:
-    """Information about a detected document type"""
-
-    type_name: str
-    confidence: float  # 0.0 to 1.0
-    version: Optional[str] = None
-    schema_uri: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
-
-
-@dataclass
-class SpecializedAnalysis:
-    """Results from specialized handler analysis"""
-
-    document_type: str
-    key_findings: Dict[str, Any]
-    recommendations: List[str]
-    data_inventory: Dict[str, int]  # What types of data found and counts
-    ai_use_cases: List[str]  # Potential AI/ML applications
-    structured_data: Dict[str, Any]  # Extracted structured data
-    quality_metrics: Dict[str, float]  # Data quality indicators
-
-
-class XMLHandler(ABC):
-    """Abstract base class for XML document handlers"""
-
-    @abstractmethod
-    def can_handle(
-        self, root: Element, namespaces: Dict[str, str]
-    ) -> Tuple[bool, float]:
-        """
-        Check if this handler can process the document
-        Returns: (can_handle: bool, confidence: float)
-        """
-        pass
-
-    @abstractmethod
-    def detect_type(
-        self, root: Element, namespaces: Dict[str, str]
-    ) -> DocumentTypeInfo:
-        """Detect specific document type and version"""
-        pass
-
-    @abstractmethod
-    def analyze(self, root: Element, file_path: str) -> SpecializedAnalysis:
-        """Perform specialized analysis on the document"""
-        pass
-
-    @abstractmethod
-    def extract_key_data(self, root: Element) -> Dict[str, Any]:
-        """Extract the most important data from this document type"""
-        pass
 
 
 # All specialized handlers have been moved to individual files in src/handlers/
@@ -100,7 +45,7 @@ class XMLDocumentAnalyzer:
         self.max_file_size_mb = max_file_size_mb
 
         # Use the centralized handler registry
-        from handlers import ALL_HANDLERS
+        from ..handlers import ALL_HANDLERS
 
         # Instantiate all handlers from the registry
         self.handlers = [handler_class() for handler_class in ALL_HANDLERS]
@@ -116,7 +61,10 @@ class XMLDocumentAnalyzer:
 
                 if file_size_mb > self.max_file_size_mb:
                     return {
-                        "error": f"File too large: {file_size_mb:.2f}MB exceeds limit of {self.max_file_size_mb}MB",
+                        "error": (
+                            f"File too large: {file_size_mb:.2f}MB exceeds "
+                            f"limit of {self.max_file_size_mb}MB"
+                        ),
                         "file_path": file_path,
                         "file_size_mb": file_size_mb,
                         "size_limit_exceeded": True,
@@ -149,7 +97,7 @@ class XMLDocumentAnalyzer:
         best_confidence = 0.0
 
         for handler in self.handlers:
-            can_handle, confidence = handler.can_handle(root, namespaces)
+            can_handle, confidence = handler.can_handle(file_path, root=root, namespaces=namespaces)
             if can_handle and confidence > best_confidence:
                 best_handler = handler
                 best_confidence = confidence
@@ -158,10 +106,10 @@ class XMLDocumentAnalyzer:
             best_handler = self.handlers[-1]  # Use generic handler
 
         # Detect document type
-        doc_type = best_handler.detect_type(root, namespaces)
+        doc_type = best_handler.detect_type(file_path, root=root, namespaces=namespaces)
 
         # Perform specialized analysis
-        analysis = best_handler.analyze(root, file_path)
+        analysis = best_handler.analyze(file_path, root=root)
 
         # Combine results
         return {
@@ -206,7 +154,7 @@ class XMLDocumentAnalyzer:
 
     def get_handler_info(self) -> Dict[str, Any]:
         """Get information about loaded handlers"""
-        from handlers import get_handler_info
+        from ..handlers import get_handler_info
 
         info = get_handler_info()
         info["loaded_handlers"] = len(self.handlers)
@@ -214,7 +162,7 @@ class XMLDocumentAnalyzer:
 
     def get_handlers_by_category(self, category: str) -> List[str]:
         """Get handler names in a specific category"""
-        from handlers import get_handlers_by_category
+        from ..handlers import get_handlers_by_category
 
         handler_classes = get_handlers_by_category(category)
         return [handler.__name__ for handler in handler_classes]

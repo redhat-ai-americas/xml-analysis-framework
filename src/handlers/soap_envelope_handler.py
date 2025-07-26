@@ -6,24 +6,20 @@ Analyzes SOAP 1.1 and 1.2 message envelopes to extract headers, body content,
 fault information, and security details for web service analysis and security scanning.
 """
 
-import defusedxml.ElementTree as ET
-from typing import Dict, List, Optional, Any, Tuple
-import re
 import sys
 import os
-from typing import TYPE_CHECKING
+from typing import Dict, Optional, Any, Tuple, TYPE_CHECKING
+import defusedxml.ElementTree as ET
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
-    from typing import Any
-
     Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis  # noqa: E402
 
 
 class SOAPEnvelopeHandler(XMLHandler):
@@ -611,7 +607,7 @@ class SOAPEnvelopeHandler(XMLHandler):
             metrics["message_size_estimate"] = len(
                 ET.tostring(root, encoding="unicode")
             )
-        except:
+        except Exception:
             metrics["message_size_estimate"] = 0
 
         return metrics

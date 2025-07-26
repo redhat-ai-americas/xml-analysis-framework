@@ -19,7 +19,7 @@ def debug_analyzer_issue():
     # Test 1: Direct import
     print("1. Testing direct import...")
     try:
-        from core.analyzer import XMLDocumentAnalyzer
+        from src.core.analyzer import XMLDocumentAnalyzer
         analyzer = XMLDocumentAnalyzer()
         print(f"   ✅ Direct import successful: {len(analyzer.handlers)} handlers")
     except Exception as e:
@@ -30,7 +30,7 @@ def debug_analyzer_issue():
     # Test 2: Check handlers registry
     print("\n2. Testing handlers registry...")
     try:
-        from handlers import ALL_HANDLERS
+        from src.handlers import ALL_HANDLERS
         print(f"   ✅ Registry import successful: {len(ALL_HANDLERS)} handlers in registry")
         print(f"   First 5: {[h.__name__ for h in ALL_HANDLERS[:5]]}")
     except Exception as e:

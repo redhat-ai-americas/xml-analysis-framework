@@ -10,7 +10,7 @@ import json
 # Add the src directory to the path
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src'))
 
-from core.analyzer import XMLDocumentAnalyzer
+from src.core.analyzer import XMLDocumentAnalyzer
 
 def main():
     analyzer = XMLDocumentAnalyzer()

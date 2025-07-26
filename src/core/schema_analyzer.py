@@ -281,7 +281,11 @@ KEY ELEMENTS (Top 10 by frequency):
                 else "[leaf]"
             )
 
-            description += f"\n- {tag}: {info.count:,} occurrences, depths {sorted(info.depth_levels)[:5]} {attrs_summary} {text_summary} {children_summary}"
+            description += (
+                f"\n- {tag}: {info.count:,} occurrences, "
+                f"depths {sorted(info.depth_levels)[:5]} {attrs_summary} "
+                f"{text_summary} {children_summary}"
+            )
 
             # Show key attributes
             if info.attributes:
@@ -294,7 +298,7 @@ KEY ELEMENTS (Top 10 by frequency):
                 description += f'\n  Sample text: "{sample_text}..."'
 
         # Simplified structure tree (avoid deep nesting in output)
-        description += f"\n\nSTRUCTURE SUMMARY:\n"
+        description += "\n\nSTRUCTURE SUMMARY:\n"
         for root_elem, tree_info in list(schema.structure_tree.items())[:3]:
             description += f"- {root_elem}: {tree_info.get('count', 0)} occurrences\n"
             if "children" in tree_info:
@@ -336,7 +340,7 @@ def analyze_xml_file(file_path: str, output_json: bool = False) -> str:
 
 
 if __name__ == "__main__":
-    import sys
+    import sys  # noqa: F811
 
     if len(sys.argv) < 2:
         print("Usage: python xml_analyzer.py <xml_file> [--json]")

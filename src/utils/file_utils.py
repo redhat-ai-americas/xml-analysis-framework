@@ -120,7 +120,7 @@ def create_analyzer_with_limits(max_size_mb: float = 100.0):
     Returns:
         XMLDocumentAnalyzer instance with size limits
     """
-    from core.analyzer import XMLDocumentAnalyzer
+    from src.core.analyzer import XMLDocumentAnalyzer
 
     return XMLDocumentAnalyzer(max_file_size_mb=max_size_mb)
 
@@ -135,7 +135,7 @@ def create_chunking_orchestrator_with_limits(max_size_mb: float = 100.0):
     Returns:
         ChunkingOrchestrator instance with size limits
     """
-    from core.chunking import ChunkingOrchestrator
+    from src.core.chunking import ChunkingOrchestrator
 
     return ChunkingOrchestrator(max_file_size_mb=max_size_mb)
 

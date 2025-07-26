@@ -12,12 +12,12 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 import traceback
 
-# Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+# Add project root directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
-    from core.analyzer import XMLDocumentAnalyzer
-    from core.schema_analyzer import XMLSchemaAnalyzer
+    from src.core.analyzer import XMLDocumentAnalyzer
+    from src.core.schema_analyzer import XMLSchemaAnalyzer
 except ImportError as e:
     print(f"❌ Failed to import required modules: {e}")
     sys.exit(1)
@@ -45,58 +45,57 @@ class HandlerTester:
         test_cases = [
             # SCAP Handler tests
             ("SCAP Handler", [
-                "../sample_data/stigs_old/node2.example.com-STIG-20250710162433.xml",
-                "../sample_data/test_files/small/scap/ios-sample-1.0.xccdf.xml",
-                "../sample_data/test_files/small/scap/ios-sample-1.1.xccdf.xml",
-                "../sample_data/test_files_synthetic/small/scap/security-assessment-report.xml"
+                "sample_data/test_files/small/scap/ios-sample-1.0.xccdf.xml",
+                "sample_data/test_files/small/scap/ios-sample-1.1.xccdf.xml",
+                "sample_data/test_files_synthetic/small/scap/security-assessment-report.xml"
             ]),
             
             # RSS Handler tests
             ("RSS Handler", [
-                "../sample_data/test_files_synthetic/small/rss/sample-feed.xml"
+                "sample_data/test_files_synthetic/small/rss/sample-feed.xml"
             ]),
             
             # Maven POM Handler tests
             ("Maven POM Handler", [
-                "../sample_data/test_files_synthetic/small/pom/spring-boot-example-pom.xml"
+                "sample_data/test_files_synthetic/small/pom/spring-boot-example-pom.xml"
             ]),
             
             # Spring Config Handler tests
             ("Spring Config Handler", [
-                "../sample_data/test_files_synthetic/small/spring/applicationContext-example.xml"
+                "sample_data/test_files_synthetic/small/spring/applicationContext-example.xml"
             ]),
             
             # Log4j Config Handler tests
             ("Log4j Config Handler", [
-                "../sample_data/test_files_synthetic/small/log4j/log4j2-example.xml"
+                "sample_data/test_files_synthetic/small/log4j/log4j2-example.xml"
             ]),
             
             # SVG Handler tests
             ("SVG Handler", [
-                "../sample_data/test_files_synthetic/small/svg/sample-icon.svg"
+                "sample_data/test_files_synthetic/small/svg/sample-icon.svg"
             ]),
             
             # DocBook Handler tests
             ("DocBook Handler", [
-                "../sample_data/test_files_synthetic/small/docbook/sample-docbook-guide.xml"
+                "sample_data/test_files_synthetic/small/docbook/sample-docbook-guide.xml"
             ]),
             
             # Sitemap Handler tests
             ("Sitemap Handler", [
-                "../sample_data/test_files_synthetic/small/sitemap/sitemap-example.xml"
+                "sample_data/test_files_synthetic/small/sitemap/sitemap-example.xml"
             ]),
             
             # WSDL Handler tests (from src/handlers)
             ("WSDL Handler", [
-                "../sample_data/test_files/small/wsdl/calculator-soap.wsdl",
-                "../sample_data/test_files/small/wsdl/bet365-contacts-soap.wsdl",
-                "../sample_data/test_files_synthetic/small/wsdl/hotel-reservation-service.wsdl"
+                "sample_data/test_files/small/wsdl/calculator-soap.wsdl",
+                "sample_data/test_files/small/wsdl/bet365-contacts-soap.wsdl",
+                "sample_data/test_files_synthetic/small/wsdl/hotel-reservation-service.wsdl"
             ]),
             
             # XSD Handler tests (from src/handlers)
             ("XSD Handler", [
-                "../sample_data/test_files/small/scap/xccdf_1.2_bundle_2_xml.xsd",
-                "../sample_data/test_files_synthetic/small/xsd/library-schema.xsd"
+                "sample_data/test_files/small/scap/xccdf_1.2_bundle_2_xml.xsd",
+                "sample_data/test_files_synthetic/small/xsd/library-schema.xsd"
             ])
         ]
         
@@ -135,9 +134,9 @@ class HandlerTester:
         print(f"\n🔍 Testing Additional Files (Generic Behavior)")
         print("-" * 40)
         additional_files = [
-            "../sample_data/test_files/small/ant/build.xml",  # Should be generic (no ant handler yet)
-            "../sample_data/test_files/small/kml/mapbox-example.kml",  # Should be generic
-            "../sample_data/test_files/small/nuget/example-nuspec.xml"  # Should be generic
+            "sample_data/test_files/small/ant/ant-ivy-build.xml",  # Should be handled by ant handler
+            "sample_data/test_files/small/kml/mapbox-example.kml",  # Should be handled by KML handler
+            "sample_data/test_files/small/nuget/example-nuspec.xml"  # Should be generic
         ]
         
         for file_path in additional_files:
@@ -164,10 +163,21 @@ class HandlerTester:
         }
         
         try:
+            # Convert relative path to absolute path from project root
+            if not file_path.startswith('/'):
+                # Get project root (parent of tests directory)
+                project_root = Path(__file__).parent.parent
+                full_path = project_root / file_path
+            else:
+                full_path = Path(file_path)
+            
             # Check if file exists
-            if not Path(file_path).exists():
-                result['error'] = "File not found"
+            if not full_path.exists():
+                result['error'] = f"File not found: {full_path}"
                 return result
+            
+            # Update file_path to absolute path for analysis
+            file_path = str(full_path)
             
             # Time the analysis
             import time

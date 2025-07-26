@@ -14,7 +14,7 @@ def test_sitemap_integration():
     """Test Sitemap handler integration with main analyzer"""
     
     try:
-        from core.analyzer import XMLDocumentAnalyzer
+        from src.core.analyzer import XMLDocumentAnalyzer
         print("✅ XMLDocumentAnalyzer imported successfully")
     except ImportError as e:
         print(f"❌ Failed to import XMLDocumentAnalyzer: {e}")
@@ -22,7 +22,7 @@ def test_sitemap_integration():
     
     # Test registry import
     try:
-        from handlers import ALL_HANDLERS, SitemapHandler
+        from src.handlers import ALL_HANDLERS, SitemapHandler
         print(f"✅ Handler registry imported successfully ({len(ALL_HANDLERS)} handlers)")
         
         # Check if SitemapHandler is in the registry

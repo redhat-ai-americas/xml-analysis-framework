@@ -10,23 +10,19 @@ This handler serves as the default option and performs basic XML document
 analysis including structure analysis, pattern detection, and data extraction.
 """
 
-# ET import removed - not used in this handler
-from typing import Dict, List, Any, Tuple
 import sys
 import os
-from typing import TYPE_CHECKING
+from typing import Dict, List, Any, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
-    from typing import Any
-
     Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis  # noqa: E402
 
 
 class GenericXMLHandler(XMLHandler):

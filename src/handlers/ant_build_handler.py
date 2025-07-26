@@ -6,24 +6,19 @@ Analyzes Apache Ant build.xml files to extract build targets, tasks,
 properties, and dependencies for build analysis and CI/CD optimization.
 """
 
-import defusedxml.ElementTree as ET
-from typing import Dict, List, Any, Tuple
-import re
 import sys
 import os
-from typing import TYPE_CHECKING
+from typing import Dict, List, Any, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
-    from typing import Any
-
     Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis  # noqa: E402
 
 
 class AntBuildHandler(XMLHandler):
@@ -71,16 +66,9 @@ class AntBuildHandler(XMLHandler):
         version = None
 
         # Look for version information in comments
-        if hasattr(root, "iter"):
-            for elem in root.iter():
-                if elem.tag is ET.Comment:
-                    comment_text = str(elem)
-                    version_match = re.search(
-                        r"ant[^\d]*(\d+\.\d+(?:\.\d+)?)", comment_text, re.IGNORECASE
-                    )
-                    if version_match:
-                        version = version_match.group(1)
-                        break
+        # Note: defusedxml doesn't preserve comments during parsing
+        # So we'll skip comment-based version detection
+        version = None
 
         metadata = {
             "build_tool": "Apache Ant",

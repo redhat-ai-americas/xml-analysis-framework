@@ -7,25 +7,19 @@ translation and localization workflows. Extracts translation units,
 states, metadata, and provides translation quality metrics and workflow insights.
 """
 
-# ET import removed - not used in this handler
-from typing import Dict, List, Optional, Any, Tuple
-import re
 import sys
 import os
-from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import Dict, List, Optional, Any, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
-    from typing import Any
-
     Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis  # noqa: E402
 
 
 class XLIFFHandler(XMLHandler):
@@ -127,7 +121,7 @@ class XLIFFHandler(XMLHandler):
                 version = "1.2"
 
         # Detect document characteristics
-        ns = self._get_namespace(root)
+        _ = self._get_namespace(root)  # Namespace for potential future use
 
         # Count translation units and files
         trans_units = self._find_elements_by_local_name(root, "trans-unit")

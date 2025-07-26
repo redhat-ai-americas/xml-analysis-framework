@@ -16,8 +16,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
-    from typing import Any
-
     Element = Any
 
 
@@ -85,7 +83,8 @@ class XMLChunkingStrategy:
 
                 if file_size_mb > self.max_file_size_mb:
                     raise ValueError(
-                        f"File too large: {file_size_mb:.2f}MB exceeds limit of {self.max_file_size_mb}MB"
+                        f"File too large: {file_size_mb:.2f}MB exceeds "
+                        f"limit of {self.max_file_size_mb}MB"
                     )
             except OSError as e:
                 raise OSError(f"Failed to check file size: {e}")
@@ -740,7 +739,8 @@ class ChunkingOrchestrator:
 
                 if file_size_mb > self.max_file_size_mb:
                     raise ValueError(
-                        f"File too large: {file_size_mb:.2f}MB exceeds limit of {self.max_file_size_mb}MB"
+                        f"File too large: {file_size_mb:.2f}MB exceeds "
+                        f"limit of {self.max_file_size_mb}MB"
                     )
             except OSError as e:
                 raise OSError(f"Failed to check file size: {e}")
@@ -833,7 +833,7 @@ class ChunkingOrchestrator:
 # Example usage
 if __name__ == "__main__":
     # Example: Using the chunking orchestrator
-    from core.analyzer import XMLDocumentAnalyzer
+    from src.core.analyzer import XMLDocumentAnalyzer
 
     # Analyze document first
     analyzer = XMLDocumentAnalyzer()

@@ -6,24 +6,20 @@ Analyzes XML sitemap files for SEO optimization, URL structure analysis,
 content indexing patterns, and website health monitoring.
 """
 
-# ET import removed - not used in this handler
-from typing import Dict, List, Optional, Any, Tuple
 import sys
 import os
+from typing import Dict, List, Any, Tuple, TYPE_CHECKING
 from urllib.parse import urlparse
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
-    from typing import Any
-
     Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis  # noqa: E402
 
 
 class SitemapHandler(XMLHandler):
@@ -807,7 +803,7 @@ class SitemapHandler(XMLHandler):
         if not changefreqs:
             return 0.0
 
-        total = sum(changefreqs.values())
+        _ = sum(changefreqs.values())  # Total for potential future analysis
         # More consistent if fewer different frequencies are used
         return 1.0 - (len(changefreqs) - 1) / 6  # 6 is max reasonable changefreq types
 

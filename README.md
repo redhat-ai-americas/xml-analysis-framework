@@ -11,8 +11,9 @@ A production-ready XML document analysis and preprocessing framework with **29 s
 ## 🚀 Quick Start
 
 ### Document Analysis
+
 ```python
-from core.analyzer import XMLDocumentAnalyzer
+from src.core.analyzer import XMLDocumentAnalyzer
 
 analyzer = XMLDocumentAnalyzer()
 analysis = analyzer.analyze_document("path/to/file.xml")
@@ -30,9 +31,10 @@ analysis = analyzer.analyze_document("path/to/file.xml")
 ```
 
 ### Smart Chunking
+
 ```python
-from core.analyzer import XMLDocumentAnalyzer
-from core.chunking import ChunkingOrchestrator
+from src.core.analyzer import XMLDocumentAnalyzer
+from src.core.chunking import ChunkingOrchestrator
 
 # First get analysis
 analyzer = XMLDocumentAnalyzer()
@@ -57,9 +59,10 @@ chunks = orchestrator.chunk_document(
 ```
 
 ### Complete Workflow
+
 ```python
-from core.analyzer import XMLDocumentAnalyzer
-from core.chunking import ChunkingOrchestrator, XMLChunkingStrategy
+from src.core.analyzer import XMLDocumentAnalyzer
+from src.core.chunking import ChunkingOrchestrator, XMLChunkingStrategy
 
 # 1. Analyze document
 analyzer = XMLDocumentAnalyzer()
@@ -87,13 +90,16 @@ for chunk in chunks:
 ## 🎯 Key Features
 
 ### 1. **🏆 Production Proven Results**
+
 - **100% Success Rate**: All 71 test files processed successfully
-- **2,752 Chunks Generated**: Average 38.8 optimized chunks per file  
+- **2,752 Chunks Generated**: Average 38.8 optimized chunks per file
 - **54 Document Types Detected**: Comprehensive XML format coverage
 - **Minimal Dependencies**: Only defusedxml for security + Python stdlib
 
 ### 2. **🧠 29 Specialized XML Handlers**
+
 Enterprise-grade document intelligence:
+
 - **Security & Compliance**: SCAP, SAML, SOAP (90-100% confidence)
 - **DevOps & Build**: Maven POM, Ant, Ivy, Spring, Log4j (95-100% confidence)
 - **Content & Documentation**: RSS/Atom, DocBook, XHTML, SVG
@@ -101,12 +107,14 @@ Enterprise-grade document intelligence:
 - **Data & APIs**: GPX, KML, GraphML, WADL/WSDL, XML Schemas
 
 ### 3. **⚡ Intelligent Processing Pipeline**
+
 - **Smart Document Detection**: Confidence scoring with graceful fallbacks
 - **Semantic Chunking**: Document-type-aware optimal segmentation
 - **Token Optimization**: LLM context window optimized chunks
 - **Quality Assessment**: Automated data quality metrics
 
 ### 4. **🤖 AI-Ready Integration**
+
 - **Vector Store Ready**: Structured embeddings with rich metadata
 - **Graph Database Compatible**: Relationship and dependency mapping
 - **LLM Agent Optimized**: Context-aware, actionable insights
@@ -114,16 +122,16 @@ Enterprise-grade document intelligence:
 
 ## 📋 Supported Document Types (29 Handlers)
 
-| Category | Handlers | Confidence | Use Cases |
-|----------|----------|------------|-----------|
-| **🔐 Security & Compliance** | SCAP, SAML, SOAP | 90-100% | Vulnerability assessment, compliance monitoring, security posture analysis |
-| **⚙️ DevOps & Build Tools** | Maven POM, Ant, Ivy | 95-100% | Dependency analysis, build optimization, technical debt assessment |
-| **🏢 Enterprise Configuration** | Spring, Hibernate, Struts, Log4j | 95-100% | Configuration validation, security scanning, modernization planning |
-| **📄 Content & Documentation** | RSS, DocBook, XHTML, SVG | 90-100% | Content intelligence, documentation search, knowledge management |
-| **🗂️ Enterprise Systems** | ServiceNow, XML Sitemap | 95-100% | Incident analysis, process automation, system integration |
-| **🌍 Geospatial & Data** | GPX, KML, GraphML | 85-95% | Route optimization, geographic analysis, network intelligence |
-| **🔌 API & Integration** | WADL, WSDL, XLIFF | 90-95% | Service discovery, integration planning, translation workflows |
-| **📐 Schemas & Standards** | XML Schema (XSD) | 100% | Schema validation, data modeling, API documentation |
+| Category                              | Handlers                         | Confidence | Use Cases                                                                  |
+| ------------------------------------- | -------------------------------- | ---------- | -------------------------------------------------------------------------- |
+| **🔐 Security & Compliance**    | SCAP, SAML, SOAP                 | 90-100%    | Vulnerability assessment, compliance monitoring, security posture analysis |
+| **⚙️ DevOps & Build Tools**   | Maven POM, Ant, Ivy              | 95-100%    | Dependency analysis, build optimization, technical debt assessment         |
+| **🏢 Enterprise Configuration** | Spring, Hibernate, Struts, Log4j | 95-100%    | Configuration validation, security scanning, modernization planning        |
+| **📄 Content & Documentation**  | RSS, DocBook, XHTML, SVG         | 90-100%    | Content intelligence, documentation search, knowledge management           |
+| **🗂️ Enterprise Systems**     | ServiceNow, XML Sitemap          | 95-100%    | Incident analysis, process automation, system integration                  |
+| **🌍 Geospatial & Data**        | GPX, KML, GraphML                | 85-95%     | Route optimization, geographic analysis, network intelligence              |
+| **🔌 API & Integration**        | WADL, WSDL, XLIFF                | 90-95%     | Service discovery, integration planning, translation workflows             |
+| **📐 Schemas & Standards**      | XML Schema (XSD)                 | 100%       | Schema validation, data modeling, API documentation                        |
 
 ## 🏗️ Architecture
 
@@ -180,14 +188,14 @@ xml-analysis-framework/
 This framework uses **defusedxml** to protect against common XML security vulnerabilities:
 
 - **XXE (XML External Entity) attacks**: Prevents reading local files or making network requests
-- **Billion Laughs attack**: Prevents exponential entity expansion DoS attacks  
+- **Billion Laughs attack**: Prevents exponential entity expansion DoS attacks
 - **DTD retrieval**: Blocks external DTD fetching to prevent data exfiltration
 
 #### Security Features
 
 ```python
 # All XML parsing is automatically protected
-from core.analyzer import XMLDocumentAnalyzer
+from src.core.analyzer import XMLDocumentAnalyzer
 
 analyzer = XMLDocumentAnalyzer()
 # Safe parsing - malicious XML will be rejected
@@ -210,8 +218,8 @@ The framework includes built-in file size limits to prevent memory exhaustion:
 
 ```python
 # Built-in size limits in analyzer and chunking
-from core.analyzer import XMLDocumentAnalyzer
-from core.chunking import ChunkingOrchestrator
+from src.core.analyzer import XMLDocumentAnalyzer
+from src.core.chunking import ChunkingOrchestrator
 
 # Create analyzer with 50MB limit
 analyzer = XMLDocumentAnalyzer(max_file_size_mb=50.0)
@@ -247,8 +255,9 @@ pip install -e .[dev]
 ## 📖 Usage Examples
 
 ### Basic Analysis
+
 ```python
-from core.schema_analyzer import XMLSchemaAnalyzer
+from src.core.schema_analyzer import XMLSchemaAnalyzer
 
 analyzer = XMLSchemaAnalyzer()
 schema = analyzer.analyze_file('document.xml')
@@ -260,8 +269,9 @@ print(f"Namespaces: {schema.namespaces}")
 ```
 
 ### Enhanced Analysis with Specialized Handlers
+
 ```python
-from core.analyzer import XMLDocumentAnalyzer
+from src.core.analyzer import XMLDocumentAnalyzer
 
 analyzer = XMLDocumentAnalyzer()
 result = analyzer.analyze_document('maven-project.xml')
@@ -273,6 +283,7 @@ print(f"AI Use Cases: {result['analysis'].ai_use_cases}")
 ```
 
 ### Safe Analysis with File Validation
+
 ```python
 from utils import safe_analyze_document, FileSizeLimits
 
@@ -289,8 +300,9 @@ else:
 ```
 
 ### Intelligent Chunking
+
 ```python
-from core.chunking import ChunkingOrchestrator, XMLChunkingStrategy
+from src.core.chunking import ChunkingOrchestrator, XMLChunkingStrategy
 
 orchestrator = ChunkingOrchestrator()
 chunks = orchestrator.chunk_document(
@@ -309,12 +321,14 @@ for chunk in chunks:
 ## 🧪 Testing & Validation
 
 ### **Production-Tested Performance**
-- ✅ **100% Success Rate**: All 71 XML files processed successfully  
+
+- ✅ **100% Success Rate**: All 71 XML files processed successfully
 - ✅ **2,752 Chunks Generated**: Optimal segmentation across diverse document types
 - ✅ **54 Document Types**: Comprehensive coverage from ServiceNow to SCAP to Maven
 - ✅ **Secure by Default**: Protected against XXE and billion laughs attacks
 
 ### **Test Coverage**
+
 ```bash
 # Run comprehensive end-to-end test
 python test_end_to_end_workflow.py
@@ -326,8 +340,9 @@ python test_scap_analysis.py       # Security document analysis
 ```
 
 ### **Real-World Test Data**
+
 - **Enterprise Systems**: ServiceNow incident exports (8 files)
-- **Security Documents**: SCAP/XCCDF compliance reports (4 files)  
+- **Security Documents**: SCAP/XCCDF compliance reports (4 files)
 - **Build Configurations**: Maven, Ant, Ivy projects (12 files)
 - **Enterprise Config**: Spring, Hibernate, Log4j (15 files)
 - **Content & APIs**: DocBook, RSS, WADL, Sitemaps (32 files)
@@ -342,15 +357,15 @@ graph LR
     B --> C[Document Analysis<br/>29 Specialized Handlers]
     B --> D[Smart Chunking<br/>Token-Optimized]
     B --> E[AI-Ready Output<br/>Structured JSON]
-    
+  
     E --> F[Vector Store<br/>Semantic Search]
     E --> G[Graph Database<br/>Relationships]
     E --> H[LLM Agent<br/>Intelligence]
-    
+  
     F --> I[Security Intelligence]
     G --> J[DevOps Automation] 
     H --> K[Knowledge Management]
-    
+  
     style B fill:#e1f5fe,stroke:#01579b,stroke-width:2px
     style E fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
     style I fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
@@ -361,23 +376,27 @@ graph LR
 > **See [Complete AI Integration Guide](./AI_INTEGRATION_ARCHITECTURE.md)** for detailed workflows, implementation examples, and advanced use cases.
 
 ### **🔐 Security Intelligence Applications**
+
 - **SCAP Compliance Monitoring**: Automated vulnerability assessment and risk scoring
-- **SAML Security Analysis**: Authentication flow security validation and threat detection  
+- **SAML Security Analysis**: Authentication flow security validation and threat detection
 - **Log4j Vulnerability Detection**: CVE scanning and automated remediation guidance
 - **SOAP Security Assessment**: Web service configuration security review
 
 ### **⚙️ DevOps & Configuration Intelligence**
+
 - **Dependency Risk Analysis**: Maven/Ant/Ivy vulnerability scanning and upgrade planning
 - **Configuration Drift Detection**: Spring/Hibernate consistency monitoring
 - **Build Optimization**: Performance analysis and security hardening recommendations
 - **Technical Debt Assessment**: Legacy system modernization planning
 
-### **🏢 Enterprise System Intelligence**  
+### **🏢 Enterprise System Intelligence**
+
 - **ServiceNow Process Mining**: Incident pattern analysis and workflow optimization
 - **Cross-System Correlation**: Configuration impact analysis and change management
 - **Compliance Automation**: Regulatory requirement mapping and validation
 
 ### **📚 Knowledge Management Applications**
+
 - **Technical Documentation Search**: Semantic search across DocBook, API documentation
 - **Content Intelligence**: RSS/Atom trend analysis and topic extraction
 - **API Discovery**: WADL/WSDL service catalog and integration recommendations
@@ -385,6 +404,7 @@ graph LR
 ## 🔬 Production Metrics & Performance
 
 ### **Framework Statistics**
+
 - **✅ 100% Success Rate**: 71/71 files processed without errors
 - **📊 2,752 Chunks Generated**: Optimal 38.8 avg chunks per document
 - **🎯 54 Document Types**: Comprehensive XML format coverage
@@ -392,6 +412,7 @@ graph LR
 - **🔒 Secure Parsing**: defusedxml protection against XML attacks
 
 ### **Handler Confidence Levels**
+
 - **100% Confidence**: XML Schema (XSD), Maven POM, Log4j, RSS/Atom, Sitemaps
 - **95% Confidence**: ServiceNow, Apache Ant, Ivy, Spring, Hibernate, SAML, SOAP
 - **90% Confidence**: SCAP/XCCDF, DocBook, WADL/WSDL
@@ -400,20 +421,21 @@ graph LR
 ## 🚀 Extending the Framework
 
 ### Adding New Handlers
+
 ```python
-from core.analyzer import XMLHandler, SpecializedAnalysis, DocumentTypeInfo
+from src.core.analyzer import XMLHandler, SpecializedAnalysis, DocumentTypeInfo
 
 class CustomHandler(XMLHandler):
     def can_handle(self, root, namespaces):
         return root.tag == 'custom-format', 1.0
-    
+  
     def detect_type(self, root, namespaces):
         return DocumentTypeInfo(
             type_name="Custom Format",
             confidence=1.0,
             version="1.0"
         )
-    
+  
     def analyze(self, root, file_path):
         return SpecializedAnalysis(
             document_type="Custom Format",
@@ -424,8 +446,9 @@ class CustomHandler(XMLHandler):
 ```
 
 ### Custom Chunking Strategies
+
 ```python
-from core.chunking import XMLChunkingStrategy, ChunkingOrchestrator
+from src.core.chunking import XMLChunkingStrategy, ChunkingOrchestrator
 
 class CustomChunking(XMLChunkingStrategy):
     def chunk_document(self, file_path, specialized_analysis=None):
@@ -440,6 +463,7 @@ orchestrator.strategies['custom'] = CustomChunking
 ## 📊 Real Production Output Examples
 
 ### **ServiceNow Incident Analysis**
+
 ```json
 {
   "document_summary": {
@@ -474,7 +498,8 @@ orchestrator.strategies['custom'] = CustomChunking
 }
 ```
 
-### **Log4j Security Analysis** 
+### **Log4j Security Analysis**
+
 ```json
 {
   "document_summary": {
@@ -512,6 +537,7 @@ orchestrator.strategies['custom'] = CustomChunking
 We welcome contributions! Whether you're adding new XML handlers, improving chunking algorithms, or enhancing AI integrations, your contributions help make XML analysis more accessible and powerful.
 
 **Priority contribution areas:**
+
 - 🎯 New XML format handlers (ERP, CRM, healthcare, government)
 - ⚡ Enhanced chunking algorithms and strategies
 - 🚀 Performance optimizations for large files

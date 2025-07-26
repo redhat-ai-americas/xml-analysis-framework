@@ -14,26 +14,21 @@ Key features:
 - Support for custom fields (u_ prefix)
 """
 
-# ET import removed - not used in this handler
-from typing import Dict, List, Optional, Any, Tuple
-from datetime import datetime
-import base64
 import re
 import sys
 import os
-from typing import TYPE_CHECKING
+from typing import Dict, List, Optional, Any, Tuple, TYPE_CHECKING
+from datetime import datetime
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
-    from typing import Any
-
     Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis  # noqa: E402
 
 
 class ServiceNowHandler(XMLHandler):
@@ -122,7 +117,7 @@ class ServiceNowHandler(XMLHandler):
         ai_use_cases = self._identify_ai_use_cases(findings)
 
         return SpecializedAnalysis(
-            document_type=f"ServiceNow Export",
+            document_type="ServiceNow Export",
             key_findings=findings,
             recommendations=recommendations,
             data_inventory=self._create_data_inventory(root),
@@ -450,7 +445,7 @@ class ServiceNowHandler(XMLHandler):
                 resolved_dt = datetime.fromisoformat(resolved.replace(" ", "T"))
                 duration = resolved_dt - opened_dt
                 return str(duration)
-            except:
+            except Exception:
                 pass
 
         return None
@@ -479,7 +474,7 @@ class ServiceNowHandler(XMLHandler):
                 last = datetime.fromisoformat(timestamps[-1].replace(" ", "T"))
                 duration = last - first
                 return str(duration)
-            except:
+            except Exception:
                 pass
 
         return None
@@ -488,7 +483,7 @@ class ServiceNowHandler(XMLHandler):
         """Analyze state transitions from journal entries"""
         # This would require parsing work notes for state changes
         # For now, return basic transition
-        state = self._get_field_value(record, "state")
+        _ = self._get_field_value(record, "state")  # State for potential future use
         state_text = self._get_field_value(record, "u_state_text")
 
         transitions = []

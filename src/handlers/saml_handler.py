@@ -6,25 +6,19 @@ Analyzes SAML (Security Assertion Markup Language) assertions, responses, and re
 for security analysis, SSO configuration validation, and identity management.
 """
 
-# ET import removed - not used in this handler
-from typing import Dict, List, Optional, Any, Tuple
-import re
 import sys
 import os
-from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import Dict, Optional, Any, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
-    from typing import Any
-
     Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis  # noqa: E402
 
 
 class SAMLHandler(XMLHandler):
@@ -183,7 +177,10 @@ class SAMLHandler(XMLHandler):
         }
 
         return SpecializedAnalysis(
-            document_type=f"SAML {findings['saml_info']['version']} {findings['saml_info']['message_type']}",
+            document_type=(
+                f"SAML {findings['saml_info']['version']} "
+                f"{findings['saml_info']['message_type']}"
+            ),
             key_findings=findings,
             recommendations=recommendations,
             data_inventory=data_inventory,

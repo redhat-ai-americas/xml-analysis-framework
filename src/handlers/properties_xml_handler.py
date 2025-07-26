@@ -7,25 +7,20 @@ These are commonly used for configuration in Java applications
 and provide a structured alternative to traditional .properties files.
 """
 
-# ET import removed - not used in this handler
-from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
-from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import Dict, List, Any, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
-    from typing import Any
-
     Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis  # noqa: E402
 
 
 class PropertiesXMLHandler(XMLHandler):
@@ -414,7 +409,7 @@ class PropertiesXMLHandler(XMLHandler):
             return "email"
 
         # Class name (Java)
-        if "." in value and value[0].isupper() and not " " in value:
+        if "." in value and value[0].isupper() and " " not in value:
             return "classname"
 
         # List/Array

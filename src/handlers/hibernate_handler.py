@@ -6,24 +6,19 @@ Analyzes Hibernate ORM configuration files and mapping files for database schema
 ORM optimization, security assessment, and migration planning.
 """
 
-# ET import removed - not used in this handler
-from typing import Dict, List, Optional, Any, Tuple
-import re
 import sys
 import os
-from typing import TYPE_CHECKING
+from typing import Dict, Optional, Any, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
-    from typing import Any
-
     Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis  # noqa: E402
 
 
 class HibernateHandler(XMLHandler):
@@ -173,7 +168,9 @@ class HibernateHandler(XMLHandler):
             data_inventory["connections"] = 1
 
         return SpecializedAnalysis(
-            document_type=f"Hibernate {findings.get('hibernate_info', {}).get('file_type', 'Configuration')}",
+            document_type=(
+                f"Hibernate {findings.get('hibernate_info', {}).get('file_type', 'Configuration')}"
+            ),
             key_findings=findings,
             recommendations=recommendations,
             data_inventory=data_inventory,
@@ -676,7 +673,8 @@ class HibernateHandler(XMLHandler):
 
         if security_info["native_sql_queries"] > 0:
             security_info["security_risks"].append(
-                f'{security_info["native_sql_queries"]} native SQL queries found - review for injection risks'
+                f'{security_info["native_sql_queries"]} native SQL queries found - '
+                f'review for injection risks'
             )
 
         # Check for dynamic insert/update

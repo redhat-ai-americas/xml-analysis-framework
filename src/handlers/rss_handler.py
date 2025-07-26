@@ -6,23 +6,19 @@ Analyzes RSS and Atom feed documents for content syndication,
 news aggregation, and content distribution systems.
 """
 
-# ET import removed - not used in this handler
-from typing import Dict, List, Any, Tuple
 import sys
 import os
-from typing import TYPE_CHECKING
+from typing import Dict, List, Any, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
-    from typing import Any
-
     Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis  # noqa: E402
 
 
 class RSSHandler(XMLHandler):
@@ -51,7 +47,8 @@ class RSSHandler(XMLHandler):
         )
 
     def analyze_xml(self, root: Element, file_path: str) -> SpecializedAnalysis:
-        channel = root.find(".//channel") or root
+        # Channel is used for RSS feeds, root for Atom feeds
+        _ = root.find(".//channel") or root  # Store reference for potential future use
         items = root.findall(".//item") or root.findall(
             ".//{http://www.w3.org/2005/Atom}entry"
         )

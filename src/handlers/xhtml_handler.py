@@ -7,25 +7,19 @@ Extracts content structure, semantic elements, accessibility features,
 metadata, and web standards compliance information.
 """
 
-# ET import removed - not used in this handler
-from typing import Dict, List, Optional, Any, Tuple
-import re
 import sys
 import os
-from urllib.parse import urlparse
-from typing import TYPE_CHECKING
+from typing import Dict, List, Optional, Any, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
-    from typing import Any
-
     Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis  # noqa: E402
 
 
 class XHTMLHandler(XMLHandler):

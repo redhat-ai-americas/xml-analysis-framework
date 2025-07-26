@@ -10,24 +10,20 @@ Handles various enterprise XML configuration files including:
 - Generic application server configurations
 """
 
-import defusedxml.ElementTree as ET
-from typing import Dict, List, Optional, Any, Tuple
 import re
 import sys
 import os
-from typing import TYPE_CHECKING
+from typing import Dict, List, Optional, Any, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
-    from typing import Any
-
     Element = Any
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis
+from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis  # noqa: E402
 
 
 class EnterpriseConfigHandler(XMLHandler):
@@ -154,11 +150,9 @@ class EnterpriseConfigHandler(XMLHandler):
         elif root_tag == "Server":
             config_type = "Tomcat Server Configuration"
             # Try to detect Tomcat version from comments or attributes
-            for comment in root.iter(ET.Comment):
-                if "Tomcat" in str(comment):
-                    version_match = re.search(r"Tomcat (\d+(?:\.\d+)?)", str(comment))
-                    if version_match:
-                        version = version_match.group(1)
+            # Note: defusedxml doesn't preserve comments during parsing
+            # So we'll skip comment-based version detection
+            version = None
 
         # Check JBoss/WildFly
         elif "urn:jboss:domain" in str(namespaces.values()):

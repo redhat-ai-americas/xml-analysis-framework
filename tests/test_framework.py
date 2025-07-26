@@ -6,37 +6,37 @@ Test script to verify the XML analysis framework is working correctly
 import sys
 from pathlib import Path
 
-# Add src directory to path
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+# Add project root directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 def test_imports():
     """Test that all modules can be imported"""
     print("Testing imports...")
     
     try:
-        from core.schema_analyzer import XMLSchemaAnalyzer
+        from src.core.schema_analyzer import XMLSchemaAnalyzer
         print("✅ core.schema_analyzer imported successfully")
     except ImportError as e:
         print(f"❌ Failed to import core.schema_analyzer: {e}")
         return False
     
     try:
-        from core.analyzer import XMLDocumentAnalyzer
+        from src.core.analyzer import XMLDocumentAnalyzer
         print("✅ xml_specialized_handlers imported successfully")
     except ImportError as e:
         print(f"❌ Failed to import xml_specialized_handlers: {e}")
         return False
     
     try:
-        from core.chunking import ChunkingOrchestrator
+        from src.core.chunking import ChunkingOrchestrator
         print("✅ core.chunking imported successfully")
     except ImportError as e:
         print(f"❌ Failed to import core.chunking: {e}")
         return False
     
     try:
-        from handlers.maven_pom_handler import MavenPOMHandler
-        from handlers.log4j_config_handler import Log4jConfigHandler
+        from src.handlers.maven_pom_handler import MavenPOMHandler
+        from src.handlers.log4j_config_handler import Log4jConfigHandler
         print("✅ individual handlers imported successfully")
     except ImportError as e:
         print(f"❌ Failed to import individual handlers: {e}")
@@ -58,7 +58,7 @@ def test_basic_functionality():
     test_path.write_text(test_xml)
     
     try:
-        from core.analyzer import XMLDocumentAnalyzer
+        from src.core.analyzer import XMLDocumentAnalyzer
         
         analyzer = XMLDocumentAnalyzer()
         result = analyzer.analyze_document(str(test_path))
@@ -104,7 +104,7 @@ def test_handler_detection():
         }
     ]
     
-    from core.analyzer import XMLDocumentAnalyzer
+    from src.core.analyzer import XMLDocumentAnalyzer
     analyzer = XMLDocumentAnalyzer()
     
     all_passed = True

@@ -11,16 +11,16 @@ import json
 import time
 from pathlib import Path
 
-# Add src directory to path for imports
-sys.path.append(str(Path(__file__).parent / "src"))
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
-    from core.analyzer import XMLDocumentAnalyzer
-    from core.schema_analyzer import XMLSchemaAnalyzer
-    from core.chunking import XMLChunkingStrategy
+    from src.core.analyzer import XMLDocumentAnalyzer
+    from src.core.schema_analyzer import XMLSchemaAnalyzer
+    from src.core.chunking import ChunkingOrchestrator
 except ImportError as e:
     print(f"Error: Could not import required modules: {e}")
-    print("Make sure the src/ directory contains all required files.")
+    print("Make sure you're running from the project root directory.")
     sys.exit(1)
 
 def format_size(bytes_size):
