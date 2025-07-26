@@ -213,7 +213,7 @@ class TestServiceNowHandler(unittest.TestCase):
         self.assertGreater(confidence, 0.5)
         
         # Should still analyze without errors
-        analysis = self.handler.analyze(root, 'minimal.xml')
+        analysis = self.handler.analyze_xml(root, 'minimal.xml')
         self.assertIsNotNone(analysis)
     
     def test_problem_record_type(self):

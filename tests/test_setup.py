@@ -22,8 +22,9 @@ def test_imports():
 def test_sample_file():
     """Test with a sample XML file"""
     sample_files = [
-        "../sample_data/node2.example.com-STIG-20250710162433.xml",
-        "../sample_data/node2.example.com-PCI-20250710162255.xml"
+        "../sample_data/test_files/small/scap/ios-sample-1.0.xccdf.xml",
+        "../sample_data/test_files/small/ant/ant-ivy-build.xml",
+        "../sample_data/test_files_synthetic/small/servicenow/incident_export.xml"
     ]
     
     for sample_file in sample_files:
