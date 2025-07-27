@@ -13,8 +13,8 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="xml-analysis-framework",
-    version="1.2.1",
-    author="AI Building Blocks",
+    version="1.2.11",
+    author="Wes Jackson",
     author_email="wjackson@redhat.com",
     description="XML document analysis and preprocessing framework designed for AI/ML data pipelines",
     long_description=long_description,
@@ -25,8 +25,13 @@ setup(
         "Source": "https://github.com/redhat-ai-americas/xml-analysis-framework",
         "Documentation": "https://github.com/redhat-ai-americas/xml-analysis-framework/blob/main/README.md",
     },
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
+    packages=[
+        "xml_analysis_framework",
+        "xml_analysis_framework.core", 
+        "xml_analysis_framework.handlers",
+        "xml_analysis_framework.utils"
+    ],
+    package_dir={"xml_analysis_framework": "src"},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",

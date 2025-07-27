@@ -31,17 +31,48 @@ class DocumentTypeInfo:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
-@dataclass
+@dataclass  
 class SpecializedAnalysis:
-    """Results from specialized handler analysis"""
-
-    document_type: str
-    key_findings: Dict[str, Any]
-    recommendations: List[str]
-    data_inventory: Dict[str, int]  # What types of data found and counts
-    ai_use_cases: List[str]  # Potential AI/ML applications
-    structured_data: Dict[str, Any]  # Extracted structured data
-    quality_metrics: Dict[str, float]  # Data quality indicators
+    """
+    Complete document analysis with document type info fields.
+    Contains all DocumentTypeInfo fields plus analysis results.
+    """
+    # Document type info fields (from DocumentTypeInfo)
+    type_name: str
+    confidence: float  # 0.0 to 1.0
+    version: Optional[str] = None
+    schema_uri: Optional[str] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    
+    # Analysis results
+    key_findings: Dict[str, Any] = field(default_factory=dict)
+    recommendations: List[str] = field(default_factory=list)
+    data_inventory: Dict[str, int] = field(default_factory=dict)  # What types of data found and counts
+    ai_use_cases: List[str] = field(default_factory=list)  # Potential AI/ML applications
+    structured_data: Dict[str, Any] = field(default_factory=dict)  # Extracted structured data
+    quality_metrics: Dict[str, float] = field(default_factory=dict)  # Data quality indicators
+    
+    # Processing metadata
+    file_path: str = ""
+    handler_used: str = ""
+    namespaces: Dict[str, str] = field(default_factory=dict)
+    file_size: int = 0
+    
+    def __getitem__(self, key):
+        """Enable dictionary-style access for backward compatibility"""
+        if key == 'document_type':
+            # Return a DocumentTypeInfo object
+            return DocumentTypeInfo(
+                type_name=self.type_name,
+                confidence=self.confidence,
+                version=self.version,
+                schema_uri=self.schema_uri,
+                metadata=self.metadata
+            )
+        elif hasattr(self, key):
+            return getattr(self, key)
+        else:
+            raise KeyError(f"'{key}' not found in SpecializedAnalysis")
 
 
 class FileHandler(ABC):
@@ -172,7 +203,8 @@ class XMLHandler(FileHandler):
         root = kwargs.get("root")
         if root is None:
             return SpecializedAnalysis(
-                document_type="Unknown",
+                type_name="Unknown",
+                confidence=0.0,
                 key_findings={},
                 recommendations=[],
                 data_inventory={},

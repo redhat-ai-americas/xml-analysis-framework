@@ -2,6 +2,141 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.11] - 2025-01-27
+
+### Documentation
+- **Major README Overhaul**: Cleaned up documentation to focus on developer needs
+  - Removed internal testing statistics and production metrics
+  - Simplified document type table, removed test-specific confidence scores
+  - Removed architecture tree diagram (developers can explore repo directly)
+  - Fixed all code examples to use correct imports and API
+  - Replaced mermaid diagram with text-based pipeline (renders properly on PyPI)
+  - Removed production output examples that were too specific to test data
+  - Added comprehensive JSON export examples for all API levels
+  - Streamlined content to focus on practical usage
+
+### Added
+- **JSON Export Examples**: Added code examples showing how to save chunks to JSON files
+  - Simple API: Basic chunk export
+  - Advanced API: Multiple strategy exports with helper functions
+  - Expert API: Complete analysis and chunks with metadata
+
+## [1.2.10] - 2025-01-27
+
+### Fixed
+- **Chunking Compatibility**: Fixed `HierarchicalChunking` to handle `SpecializedAnalysis` objects directly
+  - Added proper type checking to handle `SpecializedAnalysis`, `DocumentTypeInfo`, and dictionary formats
+  - Chunking now works seamlessly with results from `analyze_enhanced()`
+- **Documentation**: Updated README.md to show correct usage of `analyze_enhanced()` 
+  - `analyze_enhanced()` returns a `SpecializedAnalysis` object directly, not a dictionary
+  - Corrected example code to access attributes directly instead of using dictionary syntax
+
+## [1.2.9] - 2025-01-27
+
+### Fixed
+- **Breaking Change Fix**: Made `SpecializedAnalysis` subscriptable to support dictionary-style access
+  - Added `__getitem__` method to enable `result['document_type']` syntax
+  - Returns a `DocumentTypeInfo` object when accessing 'document_type' key
+  - Maintains backward compatibility with PyPI documentation examples
+  - Note: This reintroduces the inheritance relationship concept discussed in v1.2.7
+
+## [1.2.8] - 2025-01-27
+
+### Changed
+- **Version Update**: Updated package version to 1.2.8 for PyPI publishing
+- **Documentation**: Reviewed and confirmed documentation is up-to-date with recent changes
+
+## [1.2.7] - 2025-01-26
+
+### Fixed
+- **Reverted Breaking Change**: Removed inheritance relationship between SpecializedAnalysis and DocumentTypeInfo
+  - The inheritance approach would have required updating all 29 handlers
+  - Restored original SpecializedAnalysis structure to maintain compatibility
+  - The API harmonization from v1.2.6 still works perfectly without inheritance
+
+### Note
+- The chunking harmonization from v1.2.6 remains intact and functional
+- `chunk_document()` still accepts results directly from `analyze_document()` without conversion
+
+## [1.2.6] - 2025-01-26
+
+### Fixed
+- **API Harmonization**: Fixed inconsistency between `analyze_document` return format and `chunk_document` expected format
+  - `chunk_document()` now accepts `DocumentTypeInfo` objects directly from `analyze_document()` results
+  - No more manual format conversion needed for expert usage
+  - Maintains backward compatibility with dictionary format
+  - Updated docstring to clarify the accepted formats
+  - Added proper handling in `_select_strategy()` and `_post_process_chunks()` for both object and dict formats
+
+### Changed
+- **Expert Usage**: Simplified advanced usage examples - `chunk_document()` now works directly with `analyze_document()` results
+- **Documentation**: Updated README.md to reflect the harmonized API
+- **Data Model**: Extended `SpecializedAnalysis` to inherit from `DocumentTypeInfo` for future API improvements
+  - Added `to_dict()` method for backward compatibility
+  - Prepared foundation for v2.0 unified API
+
+### Developer Notes
+- **Future v2.0**: Full migration planned where `analyze_document()` will return `SpecializedAnalysis` objects directly
+- **Confidence Levels**: Preserved throughout the API as they're valuable for handler selection and transparency
+
+## [1.2.5] - 2025-01-26
+
+### Fixed
+- **Documentation**: Fixed advanced usage examples in README.md and CONTRIBUTING.md
+  - Corrected import statement for ChunkingConfig: `from xml_analysis_framework.core.chunking import ChunkingConfig`
+  - Fixed ChunkingConfig instantiation with proper parameters (max_chunk_size, min_chunk_size, overlap_size, preserve_hierarchy)
+  - Added error handling in enhanced analysis example for when quality_metrics is None
+  - Fixed variable name in CONTRIBUTING.md from `analysis` to `result` for consistency
+  - Corrected method signature for `chunk_document()` to include required `strategy` parameter
+
+### Changed
+- **Examples**: All advanced usage examples now use correct method signatures and imports
+- **Error Handling**: Enhanced analysis example now properly handles cases where specialized analysis or quality metrics may be None
+
+## [1.2.4] - 2025-01-26
+
+### Added
+- **Documentation Updates**: Comprehensive documentation for the new simple API
+  - Added API examples to CLAUDE.md showing both simple and advanced usage
+  - Updated CONTRIBUTING.md with usage examples for contributors
+  - Added clear distinction between simple API (`import xml_analysis_framework as xaf`) and advanced API (direct class imports)
+
+### Changed
+- **Developer Experience**: Improved onboarding documentation
+  - Clear examples showing the new `xaf.analyze()`, `xaf.chunk()`, and `xaf.analyze_schema()` functions
+  - Examples showing when to use simple vs advanced API
+  - Better contributor guidance for testing custom handlers
+
+## [1.2.3] - 2025-01-26
+
+### Fixed
+- **Critical Import Bug**: Fixed all handler imports to use relative imports (`from ..base import` instead of `from src.base import`)
+  - All 29 specialized handlers now work correctly when installed from PyPI
+  - Resolves ImportError that prevented package from working in production environments
+
+## [1.2.2] - 2025-01-26
+
+### Fixed
+- **Critical Import Bug**: Fixed relative import issues that prevented package from working when installed
+  - Corrected package structure to install as proper `xml_analysis_framework` package
+  - Fixed imports that were causing "attempted relative import beyond top-level package" errors
+
+### Added
+- **User-Friendly API**: Added simple, intuitive API for easy usage
+  - `import xml_analysis_framework as xaf`
+  - `xaf.analyze(file_path)` - Enhanced analysis with specialized handlers
+  - `xaf.analyze_schema(file_path)` - Basic schema analysis
+  - `xaf.chunk(file_path, strategy="auto")` - Document chunking
+  - `xaf.analyze_enhanced(file_path)` - Explicit enhanced analysis
+- **Singleton Pattern**: Optimized performance by reusing analyzer instances
+- **Better Documentation**: Added inline usage examples and comprehensive docstrings
+
+### Changed
+- **Package Structure**: Restructured to proper Python package layout
+  - Now installs as `xml_analysis_framework` with subpackages
+  - Maintains backward compatibility for advanced usage of core classes
+- **API Design**: Focused on ease of use following patterns like `numpy` and `langchain`
+
 ## [1.2.1] - 2025-01-26
 
 ### Fixed

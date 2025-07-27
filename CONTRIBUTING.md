@@ -95,6 +95,38 @@ python -m pytest tests/integration/
 python -m pytest tests/ --cov=src --cov-report=html
 ```
 
+## 🚀 Using the Framework (v1.2.3+)
+
+### Simple API for End Users
+```python
+import xml_analysis_framework as xaf
+
+# One-line analysis with specialized handlers
+result = xaf.analyze("document.xml")
+print(f"Document: {result['document_type'].type_name}")
+
+# Basic schema analysis
+schema = xaf.analyze_schema("document.xml")
+print(f"Elements: {schema.total_elements}")
+
+# Smart chunking for AI/ML
+chunks = xaf.chunk("document.xml", strategy="auto")
+print(f"Created {len(chunks)} chunks")
+```
+
+### Advanced API for Contributors
+```python
+from xml_analysis_framework import XMLDocumentAnalyzer, ChunkingOrchestrator
+
+# Custom configurations for testing/development
+analyzer = XMLDocumentAnalyzer(max_file_size_mb=1000)
+result = analyzer.analyze_document("test_file.xml")
+
+# Test custom chunking strategies
+orchestrator = ChunkingOrchestrator()
+chunks = orchestrator.chunk_document("test_file.xml", result, strategy="hierarchical")
+```
+
 ## 📝 Contributing Types
 
 ### 1. Adding New XML Handlers

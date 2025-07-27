@@ -110,19 +110,16 @@ class XMLDocumentAnalyzer:
         # Detect document type
         doc_type = best_handler.detect_type(file_path, root=root, namespaces=namespaces)
 
-        # Perform specialized analysis
-        analysis = best_handler.analyze(file_path, root=root)
-
-        # Combine results
-        return {
-            "file_path": file_path,
-            "document_type": doc_type,
-            "handler_used": best_handler.__class__.__name__,
-            "confidence": best_confidence,
-            "analysis": analysis,
-            "namespaces": namespaces,
-            "file_size": Path(file_path).stat().st_size,
-        }
+        # Perform specialized analysis (now returns unified SpecializedAnalysis)
+        analysis = best_handler.analyze(file_path, root=root, namespaces=namespaces)
+        
+        # Add metadata to the analysis object
+        analysis.file_path = file_path
+        analysis.handler_used = best_handler.__class__.__name__
+        analysis.namespaces = namespaces
+        analysis.file_size = Path(file_path).stat().st_size
+        
+        return analysis
 
     def _extract_namespaces(self, root: Element) -> Dict[str, str]:
         """Extract all namespaces from the document"""

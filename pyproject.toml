@@ -53,10 +53,7 @@ xml-analyze = "xml_analysis_framework.examples.basic_analysis:main"
 xml-analyze-enhanced = "xml_analysis_framework.examples.enhanced_analysis:main"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
-
-[tool.setuptools.packages.find]
-where = ["src"]
+package-dir = {"xml_analysis_framework" = "src"}
 
 [tool.setuptools_scm]
 write_to = "src/xml_analysis_framework/_version.py"

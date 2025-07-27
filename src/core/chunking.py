@@ -89,7 +89,8 @@ class XMLChunkingStrategy:
             except OSError as e:
                 raise OSError(f"Failed to check file size: {e}")
 
-        raise NotImplementedError
+        # Base method only does validation - subclasses implement actual chunking
+        return []
 
 
 class HierarchicalChunking(XMLChunkingStrategy):
@@ -107,9 +108,23 @@ class HierarchicalChunking(XMLChunkingStrategy):
 
         # Determine semantic boundaries based on document type
         if specialized_analysis:
-            self.config.semantic_boundaries = self._get_semantic_boundaries(
-                specialized_analysis.get("document_type", {}).get("type_name", "")
-            )
+            # Handle SpecializedAnalysis objects, DocumentTypeInfo objects, and dict formats
+            if hasattr(specialized_analysis, 'type_name'):
+                # SpecializedAnalysis object (has type_name directly)
+                type_name = specialized_analysis.type_name
+            elif hasattr(specialized_analysis, 'get'):
+                # Dictionary format
+                document_type = specialized_analysis.get("document_type", {})
+                if hasattr(document_type, 'type_name'):
+                    # DocumentTypeInfo object from analyze_document
+                    type_name = document_type.type_name
+                else:
+                    # Dictionary format (legacy)
+                    type_name = document_type.get("type_name", "")
+            else:
+                type_name = ""
+            
+            self.config.semantic_boundaries = self._get_semantic_boundaries(type_name)
 
         # Start chunking from root
         chunk_index = 0
@@ -729,7 +744,23 @@ class ChunkingOrchestrator:
         strategy: str = "auto",
         config: ChunkingConfig = None,
     ) -> List[XMLChunk]:
-        """Chunk a document using the appropriate strategy"""
+        """
+        Chunk a document using the appropriate strategy
+        
+        Args:
+            file_path: Path to the XML file to chunk
+            specialized_analysis: Analysis result from XMLDocumentAnalyzer.analyze_document()
+                                or dictionary with 'document_type' and 'analysis' keys
+            strategy: Chunking strategy ("auto", "hierarchical", "sliding_window", "content_aware")
+            config: Optional ChunkingConfig for custom chunk sizes and behavior
+            
+        Returns:
+            List of XMLChunk objects
+            
+        Note:
+            This method accepts analysis results directly from analyze_document(),
+            no format conversion needed.
+        """
 
         # Check file size limits
         if self.max_file_size_mb is not None:
@@ -768,9 +799,23 @@ class ChunkingOrchestrator:
 
         return chunks
 
-    def _select_strategy(self, analysis: Dict[str, Any]) -> str:
+    def _select_strategy(self, analysis) -> str:
         """Select the best chunking strategy based on document analysis"""
-        doc_type = analysis.get("document_type", {}).get("type_name", "")
+        # Handle both SpecializedAnalysis objects and legacy dict formats
+        if hasattr(analysis, 'type_name'):
+            # SpecializedAnalysis object (new format)
+            doc_type = analysis.type_name
+        elif isinstance(analysis, dict):
+            # Legacy dictionary format
+            document_type = analysis.get("document_type", {})
+            if hasattr(document_type, 'type_name'):
+                # DocumentTypeInfo object from analyze_document
+                doc_type = document_type.type_name
+            else:
+                # Dictionary format (legacy)
+                doc_type = document_type.get("type_name", "")
+        else:
+            doc_type = ""
 
         # Strategy selection based on document type
         strategy_map = {
@@ -788,9 +833,17 @@ class ChunkingOrchestrator:
 
         return strategy_map.get(doc_type, "sliding_window")
 
-    def _create_config_for_document(self, analysis: Dict[str, Any]) -> ChunkingConfig:
+    def _create_config_for_document(self, analysis) -> ChunkingConfig:
         """Create optimal chunking configuration for document"""
-        doc_type = analysis.get("document_type", {}).get("type_name", "")
+        # Handle both SpecializedAnalysis objects and legacy dict formats
+        if hasattr(analysis, 'type_name'):
+            # SpecializedAnalysis object (new format)
+            doc_type = analysis.type_name
+        elif isinstance(analysis, dict):
+            # Legacy dictionary format
+            doc_type = analysis.get("document_type", {}).get("type_name", "")
+        else:
+            doc_type = ""
 
         # Base configuration
         config = ChunkingConfig()
@@ -810,10 +863,24 @@ class ChunkingOrchestrator:
         return config
 
     def _post_process_chunks(
-        self, chunks: List[XMLChunk], analysis: Dict[str, Any]
+        self, chunks: List[XMLChunk], analysis
     ) -> List[XMLChunk]:
         """Post-process chunks to add additional metadata"""
-        doc_type = analysis.get("document_type", {}).get("type_name", "")
+        # Handle both SpecializedAnalysis objects and legacy dict formats
+        if hasattr(analysis, 'type_name'):
+            # SpecializedAnalysis object (new format)
+            doc_type = analysis.type_name
+        elif isinstance(analysis, dict):
+            # Legacy dictionary format
+            document_type = analysis.get("document_type", {})
+            if hasattr(document_type, 'type_name'):
+                # DocumentTypeInfo object from analyze_document
+                doc_type = document_type.type_name
+            else:
+                # Dictionary format (legacy)
+                doc_type = document_type.get("type_name", "")
+        else:
+            doc_type = ""
 
         for i, chunk in enumerate(chunks):
             # Add document context

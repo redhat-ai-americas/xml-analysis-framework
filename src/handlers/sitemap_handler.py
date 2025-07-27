@@ -19,7 +19,7 @@ else:
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis  # noqa: E402
+from ..base import XMLHandler, DocumentTypeInfo, SpecializedAnalysis  # noqa: E402
 
 
 class SitemapHandler(XMLHandler):
@@ -147,8 +147,17 @@ class SitemapHandler(XMLHandler):
                 ),
             }
 
+        # Get document type info
+        doc_type = self.detect_type(file_path, root=root, namespaces={})
+        
         return SpecializedAnalysis(
-            document_type=f"XML Sitemap {'Index' if is_index else 'URLset'}",
+            # From DocumentTypeInfo
+            type_name=doc_type.type_name,
+            confidence=doc_type.confidence,
+            version=doc_type.version,
+            schema_uri=doc_type.schema_uri,
+            metadata=doc_type.metadata,
+            # Analysis fields
             key_findings=findings,
             recommendations=recommendations,
             data_inventory=data_inventory,
