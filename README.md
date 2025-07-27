@@ -36,11 +36,12 @@ chunks_data = [
     {
         "chunk_id": chunk.chunk_id,
         "content": chunk.content,
-        "chunk_type": chunk.chunk_type,
+        "element_path": chunk.element_path,
         "start_line": chunk.start_line,
         "end_line": chunk.end_line,
         "elements_included": chunk.elements_included,
-        "metadata": chunk.metadata
+        "metadata": chunk.metadata,
+        "token_estimate": chunk.token_estimate
     }
     for chunk in chunks
 ]
@@ -73,7 +74,7 @@ content_chunks = xaf.chunk("document.xml", strategy="content_aware")
 # Process chunks
 for chunk in hierarchical_chunks:
     print(f"Chunk {chunk.chunk_id}: {len(chunk.content)} chars")
-    print(f"Type: {chunk.chunk_type}, Elements: {len(chunk.elements_included)}")
+    print(f"Path: {chunk.element_path}, Elements: {len(chunk.elements_included)}")
 
 # 💾 Save different chunking strategies to separate files
 import json
@@ -83,11 +84,12 @@ def chunk_to_dict(chunk):
     return {
         "chunk_id": chunk.chunk_id,
         "content": chunk.content,
-        "chunk_type": chunk.chunk_type,
+        "element_path": chunk.element_path,
         "start_line": chunk.start_line,
         "end_line": chunk.end_line,
         "elements_included": chunk.elements_included,
-        "metadata": chunk.metadata
+        "metadata": chunk.metadata,
+        "token_estimate": chunk.token_estimate
     }
 
 # Save each strategy's results
@@ -160,11 +162,12 @@ output_data = {
         {
             "chunk_id": chunk.chunk_id,
             "content": chunk.content,
-            "chunk_type": chunk.chunk_type,
+            "element_path": chunk.element_path,
             "start_line": chunk.start_line,
             "end_line": chunk.end_line,
             "elements_included": chunk.elements_included,
-            "metadata": chunk.metadata
+            "metadata": chunk.metadata,
+            "token_estimate": chunk.token_estimate
         }
         for chunk in chunks
     ]
@@ -396,11 +399,13 @@ class CustomChunking(XMLChunkingStrategy):
             chunk = XMLChunk(
                 chunk_id=f"custom_{i}",
                 content=ET.tostring(element, encoding='unicode'),
-                chunk_type="custom",
+                element_path=f"/{element.tag}",
                 start_line=1,
                 end_line=10,
-                elements_included=[element.tag],
-                metadata={"custom": True}
+                parent_context=None,
+                metadata={"custom": True},
+                token_estimate=100,
+                elements_included=[element.tag]
             )
             chunks.append(chunk)
         
