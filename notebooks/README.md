@@ -115,20 +115,44 @@ The `data/` subdirectory contains synthetic test files:
 1. **Python Environment**: Python 3.8+ with virtual environment
 2. **Jupyter**: `pip install jupyter notebook` or `pip install jupyterlab`
 3. **Framework**: `pip install xml-analysis-framework`
+4. **API Keys**: OpenAI API key for notebooks 2-5 (see Environment Setup below)
 
 ### Quick Start
 1. **Clone/Download** this notebooks directory
-2. **Start Jupyter**: `jupyter notebook` or `jupyter lab`
-3. **Begin with Notebook 1** to test basic functionality
-4. **Progress to Notebook 2** for AI agent examples
-5. **Use Notebooks 3-5** for production pipeline workflows
+2. **Set up environment variables** (see Environment Setup below)
+3. **Start Jupyter**: `jupyter notebook` or `jupyter lab`
+4. **Begin with Notebook 1** to test basic functionality
+5. **Progress to Notebook 2** for AI agent examples
+6. **Use Notebooks 3-5** for production pipeline workflows
+
+### Environment Setup
+
+For notebooks that use AI features (notebooks 2-5), you'll need an OpenAI API key. You can set this up in two ways:
+
+#### Option A: Using .env File (Recommended)
+1. **Copy the example file**: `cp ../.env.example ../.env`
+2. **Edit the .env file**: Add your actual OpenAI API key:
+   ```
+   OPENAI_API_KEY=your_actual_api_key_here
+   ```
+3. **Install python-dotenv**: `pip install python-dotenv`
+4. **Notebooks will automatically load**: The notebooks use `os.getenv('OPENAI_API_KEY')` to read from .env
+
+#### Option B: System Environment Variable
+Set the environment variable in your shell before starting Jupyter:
+```bash
+export OPENAI_API_KEY="your_actual_api_key_here"
+jupyter notebook
+```
+
+**Security Note**: The .env file is in .gitignore and will never be committed to git. Always use environment variables for API keys in production.
 
 ### Advanced Setup (Full Pipeline)
 For the complete pipeline experience:
 
 ```bash
 # Install additional dependencies
-pip install lancedb sentence-transformers pymgclient pandas
+pip install lancedb sentence-transformers pymgclient pandas python-dotenv
 
 # Optional: Install Elyra for pipeline orchestration
 pip install elyra
@@ -219,7 +243,10 @@ for doc in compliance_docs:
 ## 🔒 Security Considerations
 
 - **Test Data**: All included test files are synthetic and safe
-- **API Keys**: Never commit real API keys to notebooks
+- **API Keys**: 
+  - Use .env files (automatically ignored by git) or system environment variables
+  - Never hardcode API keys directly in notebooks or code
+  - The provided .env.example shows the format but contains no real keys
 - **Data Privacy**: Be mindful of sensitive data in document content
 - **Database Security**: Secure vector and graph database connections
 - **Access Control**: Implement appropriate authentication for production

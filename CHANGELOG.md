@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.12] - 2025-01-27
+
+### Added
+- **Comprehensive Notebooks Directory**: Complete set of Jupyter notebooks for different use cases
+  - `01_testing_documentation_examples.ipynb`: Interactive testing of all README examples
+  - `02_agentic_workflow_example.ipynb`: LangChain integration and AI agent workflows
+  - `03_pipeline_data_ingestion.ipynb`: Batch document processing for production pipelines
+  - `04_pipeline_vector_population.ipynb`: Vector database population with LanceDB
+  - `05_pipeline_graph_rag.ipynb`: Graph database integration and RAG system
+- **Elyra Pipeline Configuration**: Ready-to-use pipeline for production workflows
+- **Synthetic Test Data**: Safe synthetic XML files for experimentation
+- **Vector Database Integration**: Complete LanceDB integration with sentence transformers
+- **Graph Database Support**: Memgraph integration with relationship mapping
+- **Unified RAG System**: Combines vector similarity and graph relationships for intelligent search
+
+### Documentation
+- **Notebooks README**: Comprehensive guide for all notebook use cases
+- **Pipeline Architecture**: Detailed documentation of the 3-stage pipeline
+- **Integration Examples**: Real-world usage patterns for AI/ML workflows
+- **Performance Tips**: Optimization guidelines for production deployment
+
+### Infrastructure
+- **Updated .gitignore**: Allow synthetic test files while excluding generated outputs
+- **Pipeline Orchestration**: Elyra-compatible configuration for scalable processing
+
 ## [1.2.11] - 2025-01-27
 
 ### Documentation

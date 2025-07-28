@@ -4,9 +4,25 @@
   "json_schema": "http://api.elyra.org/schemas/pipeline/pipeline-flow-v3-schema.json",
   "id": "xml-analysis-pipeline",
   "primary_pipeline": "primary",
+  "app_data": {
+    "ui_data": {
+      "comments": []
+    },
+    "version": 8,
+    "runtime_type": "LOCAL",
+    "properties": {
+      "name": "xml-analysis-pipeline",
+      "runtime": "LOCAL"
+    }
+  },
   "pipelines": [
     {
       "id": "primary",
+      "app_data": {
+        "ui_data": {
+          "comments": []
+        }
+      },
       "nodes": [
         {
           "id": "data-ingestion",

@@ -13,7 +13,7 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="xml-analysis-framework",
-    version="1.2.11",
+    version="1.2.13",
     author="Wes Jackson",
     author_email="wjackson@redhat.com",
     description="XML document analysis and preprocessing framework designed for AI/ML data pipelines",
