@@ -19,11 +19,11 @@ setup(
     description="XML document analysis and preprocessing framework designed for AI/ML data pipelines",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/redhat-ai-americas/xml-analysis-framework",
+    url="https://github.com/rdwj/xml-analysis-framework",
     project_urls={
-        "Bug Reports": "https://github.com/redhat-ai-americas/xml-analysis-framework/issues",
-        "Source": "https://github.com/redhat-ai-americas/xml-analysis-framework",
-        "Documentation": "https://github.com/redhat-ai-americas/xml-analysis-framework/blob/main/README.md",
+        "Bug Reports": "https://github.com/rdwj/xml-analysis-framework/issues",
+        "Source": "https://github.com/rdwj/xml-analysis-framework",
+        "Documentation": "https://github.com/rdwj/xml-analysis-framework/blob/main/README.md",
     },
     packages=[
         "xml_analysis_framework",

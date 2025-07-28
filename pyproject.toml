@@ -31,10 +31,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/redhat-ai-americas/xml-analysis-framework"
-Repository = "https://github.com/redhat-ai-americas/xml-analysis-framework"
-Issues = "https://github.com/redhat-ai-americas/xml-analysis-framework/issues"
-Documentation = "https://github.com/redhat-ai-americas/xml-analysis-framework/blob/main/README.md"
+Homepage = "https://github.com/rdwj/xml-analysis-framework"
+Repository = "https://github.com/rdwj/xml-analysis-framework"
+Issues = "https://github.com/rdwj/xml-analysis-framework/issues"
+Documentation = "https://github.com/rdwj/xml-analysis-framework/blob/main/README.md"
 
 [project.optional-dependencies]
 dev = [
