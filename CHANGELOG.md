@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2024-12-19
+
+### Added
+- **Unified Interface Support**
+  - New `analyze_unified()` method providing consistent interface across all analysis frameworks
+  - `UnifiedAnalysisResult` wrapper class for standardized access patterns
+  - Support for dictionary-style access: `result['document_type']`
+  - Support for attribute access: `result.document_type`
+  - Support for dict methods: `get()`, `keys()`, `values()`, `items()`
+  - Full compatibility with the unified interface standard
+  - First framework to implement the standard, serving as template for others
+
+### Changed
+- Updated `XMLDocumentAnalyzer` with `analyze_unified()` method
+- Added unified interface exports to module `__all__`
+- Maintained full backward compatibility with existing API
+
+### Documentation
+- Created framework-wide unified interface standard documentation
+- Added migration template for other frameworks
+- Updated examples to demonstrate unified interface usage
+
 ## [1.2.12] - 2025-01-27
 
 ### Added

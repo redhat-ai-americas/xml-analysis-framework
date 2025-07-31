@@ -147,6 +147,23 @@ class XMLDocumentAnalyzer:
 
         return namespaces
 
+    def analyze_unified(self, file_path: str):
+        """Analyze document and return unified result format.
+        
+        This method provides a consistent interface across all analysis frameworks.
+        
+        Args:
+            file_path: Path to the XML file to analyze
+            
+        Returns:
+            UnifiedAnalysisResult with consistent interface
+        """
+        # Import here to avoid circular imports
+        from ..unified_interface import UnifiedAnalysisResult
+        
+        raw_result = self.analyze_document(file_path)
+        return UnifiedAnalysisResult(raw_result)
+
     def get_available_handlers(self) -> List[str]:
         """Get list of available handler names"""
         return [handler.__class__.__name__ for handler in self.handlers]

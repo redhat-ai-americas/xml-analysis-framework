@@ -13,17 +13,17 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="xml-analysis-framework",
-    version="1.2.13",
+    version="1.3.1",
     author="Wes Jackson",
     author_email="wjackson@redhat.com",
     description="XML document analysis and preprocessing framework designed for AI/ML data pipelines",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/rdwj/xml-analysis-framework",
+    url="https://github.com/redhat-ai-americas/xml-analysis-framework",
     project_urls={
-        "Bug Reports": "https://github.com/rdwj/xml-analysis-framework/issues",
-        "Source": "https://github.com/rdwj/xml-analysis-framework",
-        "Documentation": "https://github.com/rdwj/xml-analysis-framework/blob/main/README.md",
+        "Bug Reports": "https://github.com/redhat-ai-americas/xml-analysis-framework/issues",
+        "Source": "https://github.com/redhat-ai-americas/xml-analysis-framework",
+        "Documentation": "https://github.com/redhat-ai-americas/xml-analysis-framework/blob/main/README.md",
     },
     packages=[
         "xml_analysis_framework",

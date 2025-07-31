@@ -29,6 +29,7 @@ __author__ = "AI Building Blocks"
 from .core.analyzer import XMLDocumentAnalyzer
 from .core.schema_analyzer import XMLSchemaAnalyzer
 from .core.chunking import ChunkingOrchestrator, XMLChunkingStrategy
+from .unified_interface import UnifiedAnalysisResult
 
 # Create singleton instances for convenience
 _enhanced_analyzer = None
@@ -71,6 +72,22 @@ def analyze_enhanced(file_path: str, **kwargs):
     """
     analyzer = _get_enhanced_analyzer()
     return analyzer.analyze_document(file_path, **kwargs)
+
+def analyze_unified(file_path: str, **kwargs) -> UnifiedAnalysisResult:
+    """
+    Analyze XML document and return unified result format.
+    
+    This provides a consistent interface across all analysis frameworks.
+    
+    Args:
+        file_path: Path to XML file
+        **kwargs: Additional arguments passed to analyzer
+        
+    Returns:
+        UnifiedAnalysisResult with consistent interface (dict-like access, standard properties)
+    """
+    analyzer = _get_enhanced_analyzer()
+    return analyzer.analyze_unified(file_path)
 
 def analyze_schema(file_path: str, **kwargs):
     """
@@ -124,6 +141,7 @@ __all__ = [
     # Main API functions
     "analyze",
     "analyze_enhanced", 
+    "analyze_unified",
     "analyze_schema",
     "chunk",
     
@@ -132,6 +150,7 @@ __all__ = [
     "XMLSchemaAnalyzer", 
     "ChunkingOrchestrator",
     "XMLChunkingStrategy",
+    "UnifiedAnalysisResult",
     
     # Package metadata
     "__version__",
