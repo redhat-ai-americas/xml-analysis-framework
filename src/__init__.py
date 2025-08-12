@@ -22,7 +22,7 @@ Simple Usage:
     chunks = xaf.chunk("file.xml", strategy="hierarchical")
 """
 
-__version__ = "1.2.13"
+__version__ = "1.4.4"
 __author__ = "AI Building Blocks"
 
 # Import core functionality for easy access

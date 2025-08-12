@@ -16,6 +16,8 @@ import defusedxml.ElementTree as ET
 from typing import Dict, List, Optional, Any, TYPE_CHECKING
 from pathlib import Path
 import json
+import tempfile
+import os
 
 # Note: Base classes imported by handlers through registry, not used directly here
 
@@ -75,10 +77,42 @@ class XMLDocumentAnalyzer:
                     "file_path": file_path,
                 }
 
-        # Parse the document
+        # Check if this might be an S1000D file that needs preprocessing
+        extracted_entities = []
+        temp_file = None
+        
         try:
-            tree = ET.parse(file_path)
-            root = tree.getroot()
+            # Quick check for S1000D DOCTYPE with entities
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                first_lines = f.read(1000)  # Read first 1KB
+                
+            # If it looks like S1000D with entities, preprocess it
+            if '<!DOCTYPE' in first_lines and '<!ENTITY' in first_lines and 'dmodule' in first_lines.lower():
+                try:
+                    from ..handlers.s1000d_entity_handler import preprocess_s1000d_xml
+                    
+                    # Preprocess to remove entities
+                    cleaned_xml, extracted_entities = preprocess_s1000d_xml(file_path)
+                    
+                    # Create a temporary file with cleaned XML
+                    temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.xml', 
+                                                            encoding='utf-8', delete=False)
+                    temp_file.write(cleaned_xml)
+                    temp_file.close()
+                    
+                    # Parse the cleaned file
+                    tree = ET.parse(temp_file.name)
+                    root = tree.getroot()
+                    
+                except ImportError:
+                    # If entity handler not available, try regular parsing
+                    pass
+                    
+            # If not S1000D or preprocessing not needed, parse normally
+            if temp_file is None:
+                tree = ET.parse(file_path)
+                root = tree.getroot()
+                
         except ET.ParseError as e:
             return {"error": f"Failed to parse XML: {e}", "file_path": file_path}
         except Exception as e:
@@ -88,6 +122,13 @@ class XMLDocumentAnalyzer:
                 "file_path": file_path,
                 "security_issue": True,
             }
+        finally:
+            # Clean up temp file if created
+            if temp_file and os.path.exists(temp_file.name):
+                try:
+                    os.unlink(temp_file.name)
+                except:
+                    pass
 
         # Extract namespaces
         namespaces = self._extract_namespaces(root)
@@ -118,6 +159,12 @@ class XMLDocumentAnalyzer:
         analysis.handler_used = best_handler.__class__.__name__
         analysis.namespaces = namespaces
         analysis.file_size = Path(file_path).stat().st_size
+        
+        # Add extracted entities if this was an S1000D file with entities
+        if extracted_entities and hasattr(analysis, 'metadata'):
+            if not analysis.metadata:
+                analysis.metadata = {}
+            analysis.metadata['extracted_entities'] = extracted_entities
         
         return analysis
 

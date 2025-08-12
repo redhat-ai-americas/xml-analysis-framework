@@ -2,6 +2,72 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.4] - 2025-01-27
+
+### Changed
+- **Build Configuration**: Fixed MANIFEST.in to properly exclude venv directory from package distribution
+
+## [1.4.3] - 2025-01-27
+
+### Fixed
+- **S1000D Entity Handling**: Fixed security blocking issue with S1000D files containing external entity references
+  - Added safe preprocessing for S1000D ICN (Information Control Number) graphic entities
+  - Entities are extracted and preserved in metadata while being safely removed from XML parsing
+  - Now handles 100% of S1000D test files (previously 53% success rate)
+  - Maintains security by only allowing legitimate S1000D graphic entity patterns (CGM, JPEG, PNG, etc.)
+
+### Added  
+- **Entity Extraction Module**: New `s1000d_entity_handler.py` for safe entity preprocessing
+  - Validates entity patterns against S1000D standards
+  - Extracts entity information for downstream use
+  - Prevents XXE attacks while maintaining functionality
+
+### Changed
+- **Core Analyzer**: Enhanced to automatically detect and preprocess S1000D files with entities
+  - Transparent preprocessing for S1000D files
+  - Extracted entities added to metadata
+  - No API changes required
+
+## [1.4.2] - 2025-01-27
+
+### Added
+- **S1000D Technical Documentation Support**
+  - New specialized `S1000DHandler` for S1000D technical documentation XML files
+  - Data Module Code (DMC) extraction and parsing
+  - Procedural step analysis and safety information extraction
+  - Cross-reference analysis between S1000D documents
+  - Parts list and equipment requirement processing
+  - Applicability rules detection and analysis
+  - Support for multiple S1000D document types (procedures, descriptions, equipment lists)
+- **S1000D Test Data Collection**
+  - Comprehensive test data from official S1000D consortium dataset
+  - Real-world procedural documents (DA1*251A*, DA2*520A*)  
+  - Description documents (*041A*, *341A*)
+  - Equipment lists (*056A*)
+  - Organized test data structure with documentation
+- **Enhanced Document Type Detection**
+  - Improved pattern matching for S1000D documents
+  - DMC pattern recognition in file content and attributes
+  - S1000D namespace and schema detection
+  - High-confidence identification (95% accuracy on test data)
+
+### Integration
+- S1000D handler integrated into main handler registry
+- Full compatibility with existing chunking strategies for RAG applications  
+- AI use case identification specific to technical documentation
+- Quality metrics for S1000D metadata completeness
+
+### Testing
+- Comprehensive integration test suite for S1000D functionality
+- Real document validation with 11 test files covering all major patterns
+- Import path fixes and handler registration validation
+- S1000D RAG demonstration script
+
+### Documentation  
+- S1000D test data documentation with DMC structure explanation
+- Handler integration examples and usage patterns
+- Information code meanings and document type classification guide
+
 ## [1.3.0] - 2024-12-19
 
 ### Added

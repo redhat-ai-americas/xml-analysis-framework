@@ -35,6 +35,9 @@ from .struts_config_handler import StrutsConfigHandler
 from .graphml_handler import GraphMLHandler
 from .xliff_handler import XLIFFHandler
 
+# Technical documentation
+from .s1000d_handler import S1000DHandler
+
 # IT Service Management
 from .servicenow_handler import ServiceNowHandler
 
@@ -75,6 +78,7 @@ ALL_HANDLERS = [
     # Content and documentation
     RSSHandler,
     DocBookHandler,
+    S1000DHandler,
     SitemapHandler,
     # Web content
     XHTMLHandler,
@@ -108,7 +112,7 @@ HANDLER_CATEGORIES = {
         HibernateHandler,
     ],
     "it_service_management": [ServiceNowHandler],
-    "content": [RSSHandler, DocBookHandler, SitemapHandler],
+    "content": [RSSHandler, DocBookHandler, S1000DHandler, SitemapHandler],
     "web_content": [XHTMLHandler],
     "geographic": [KMLHandler, GPXHandler],
     "graphics": [SVGHandler],
@@ -147,6 +151,7 @@ __all__ = [
     "StrutsConfigHandler",
     "GraphMLHandler",
     "XLIFFHandler",
+    "S1000DHandler",
     "GenericXMLHandler",
     "BPMNHandler",
     "EnterpriseConfigHandler",

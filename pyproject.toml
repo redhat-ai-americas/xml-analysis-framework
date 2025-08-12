@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "xml-analysis-framework"
-dynamic = ["version"]
+version = "1.4.4"
 description = "XML document analysis and preprocessing framework designed for AI/ML data pipelines"
 readme = "README.md"
 license = {text = "MIT"}
@@ -55,5 +55,3 @@ xml-analyze-enhanced = "xml_analysis_framework.examples.enhanced_analysis:main"
 [tool.setuptools]
 package-dir = {"xml_analysis_framework" = "src"}
 
-[tool.setuptools_scm]
-write_to = "src/xml_analysis_framework/_version.py"
