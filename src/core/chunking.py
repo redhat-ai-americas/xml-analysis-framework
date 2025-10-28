@@ -13,6 +13,8 @@ import hashlib
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from analysis_framework_base import BaseChunker, ChunkInfo as BaseChunkInfo
+
 if TYPE_CHECKING:
     from xml.etree.ElementTree import Element
 else:
@@ -32,18 +34,37 @@ class ChunkingConfig:
 
 
 @dataclass
-class XMLChunk:
-    """Represents a chunk of XML content"""
+class XMLChunk(BaseChunkInfo):
+    """
+    Represents a chunk of XML content.
 
-    chunk_id: str
-    content: str
-    element_path: str
-    start_line: int
-    end_line: int
-    parent_context: Optional[str]
-    metadata: Dict[str, Any]
-    token_estimate: int
-    elements_included: List[str]
+    Extends BaseChunkInfo with XML-specific fields for backward compatibility.
+    """
+
+    # XML-specific fields (in addition to BaseChunkInfo fields)
+    element_path: str = ""
+    start_line: int = 0
+    end_line: int = 0
+    parent_context: Optional[str] = None
+    elements_included: List[str] = None
+
+    def __post_init__(self):
+        """Initialize default values for XML-specific fields"""
+        if self.elements_included is None:
+            self.elements_included = []
+        # Ensure token_count is set from token_estimate if provided
+        if hasattr(self, 'token_estimate'):
+            self.token_count = self.token_estimate
+
+    @property
+    def token_estimate(self) -> int:
+        """Backward compatibility property for token_estimate"""
+        return self.token_count
+
+    @token_estimate.setter
+    def token_estimate(self, value: int):
+        """Backward compatibility setter for token_estimate"""
+        self.token_count = value
 
 
 class XMLChunkingStrategy:
@@ -204,15 +225,17 @@ class HierarchicalChunking(XMLChunkingStrategy):
             set(e.tag.split("}")[-1] if "}" in e.tag else e.tag for e in element.iter())
         )
 
+        token_count = self.estimate_tokens(content)
         return XMLChunk(
             chunk_id=self.generate_chunk_id(content, index),
             content=content,
+            metadata=metadata,
+            token_count=token_count,
+            chunk_type="xml",
             element_path=path,
             start_line=0,  # Would need line tracking for accurate values
             end_line=0,
             parent_context=parent_context,
-            metadata=metadata,
-            token_estimate=self.estimate_tokens(content),
             elements_included=elements_included,
         )
 
@@ -416,14 +439,11 @@ class SlidingWindowChunking(XMLChunkingStrategy):
             )
 
         content = "\n".join(content_parts)
+        token_count = self.estimate_tokens(content)
 
         return XMLChunk(
             chunk_id=self.generate_chunk_id(content, index),
             content=content,
-            element_path="; ".join(set(paths[:3])),  # First 3 unique paths
-            start_line=0,
-            end_line=0,
-            parent_context=None,
             metadata={
                 "elements_count": len(elements),
                 "depth_range": (
@@ -431,7 +451,12 @@ class SlidingWindowChunking(XMLChunkingStrategy):
                     max(e["depth"] for e in elements),
                 ),
             },
-            token_estimate=self.estimate_tokens(content),
+            token_count=token_count,
+            chunk_type="xml",
+            element_path="; ".join(set(paths[:3])),  # First 3 unique paths
+            start_line=0,
+            end_line=0,
+            parent_context=None,
             elements_included=list(tags),
         )
 
@@ -566,15 +591,16 @@ class ContentAwareChunking(XMLChunkingStrategy):
                 yield XMLChunk(
                     chunk_id=self.generate_chunk_id(content, start_index + i),
                     content=content,
-                    element_path=self._get_element_path(elem),
-                    start_line=0,
-                    end_line=0,
-                    parent_context=None,
                     metadata={
                         "content_type": "code",
                         "language": elem.get("language", "unknown"),
                     },
-                    token_estimate=tokens,
+                    token_count=tokens,
+                    chunk_type="code",
+                    element_path=self._get_element_path(elem),
+                    start_line=0,
+                    end_line=0,
+                    parent_context=None,
                     elements_included=["code"],
                 )
             else:
@@ -587,16 +613,18 @@ class ContentAwareChunking(XMLChunkingStrategy):
         """Chunk structured content like tables and lists"""
         for i, elem in enumerate(elements):
             content = ET.tostring(elem, encoding="unicode")
+            token_count = self.estimate_tokens(content)
 
             yield XMLChunk(
                 chunk_id=self.generate_chunk_id(content, start_index + i),
                 content=content,
+                metadata={"content_type": "structured", "structure_type": elem.tag},
+                token_count=token_count,
+                chunk_type="structured",
                 element_path=self._get_element_path(elem),
                 start_line=0,
                 end_line=0,
                 parent_context=None,
-                metadata={"content_type": "structured", "structure_type": elem.tag},
-                token_estimate=self.estimate_tokens(content),
                 elements_included=[elem.tag],
             )
 
@@ -606,35 +634,39 @@ class ContentAwareChunking(XMLChunkingStrategy):
         """Generic chunking for other content"""
         for i, elem in enumerate(elements):
             content = ET.tostring(elem, encoding="unicode")
+            token_count = self.estimate_tokens(content)
 
             yield XMLChunk(
                 chunk_id=self.generate_chunk_id(content, start_index + i),
                 content=content,
+                metadata={"content_type": "other"},
+                token_count=token_count,
+                chunk_type="xml",
                 element_path=self._get_element_path(elem),
                 start_line=0,
                 end_line=0,
                 parent_context=None,
-                metadata={"content_type": "other"},
-                token_estimate=self.estimate_tokens(content),
                 elements_included=[elem.tag],
             )
 
     def _create_narrative_chunk(self, content_list: List[str], index: int) -> XMLChunk:
         """Create a chunk from narrative content"""
         content = "\n".join(content_list)
+        token_count = self.estimate_tokens(content)
 
         return XMLChunk(
             chunk_id=self.generate_chunk_id(content, index),
             content=content,
-            element_path="narrative_section",
-            start_line=0,
-            end_line=0,
-            parent_context=None,
             metadata={
                 "content_type": "narrative",
                 "paragraph_count": len(content_list),
             },
-            token_estimate=self.estimate_tokens(content),
+            token_count=token_count,
+            chunk_type="narrative",
+            element_path="narrative_section",
+            start_line=0,
+            end_line=0,
+            parent_context=None,
             elements_included=["para", "p", "description"],
         )
 
@@ -673,16 +705,17 @@ class ContentAwareChunking(XMLChunkingStrategy):
                 yield XMLChunk(
                     chunk_id=self.generate_chunk_id(content, index + chunk_num),
                     content=f"<code>{content}</code>",
-                    element_path=self._get_element_path(elem),
-                    start_line=0,
-                    end_line=0,
-                    parent_context=None,
                     metadata={
                         "content_type": "code",
                         "language": elem.get("language", "unknown"),
                         "part": chunk_num + 1,
                     },
-                    token_estimate=current_size,
+                    token_count=current_size,
+                    chunk_type="code",
+                    element_path=self._get_element_path(elem),
+                    start_line=0,
+                    end_line=0,
+                    parent_context=None,
                     elements_included=["code"],
                 )
 
@@ -699,16 +732,17 @@ class ContentAwareChunking(XMLChunkingStrategy):
             yield XMLChunk(
                 chunk_id=self.generate_chunk_id(content, index + chunk_num),
                 content=f"<code>{content}</code>",
-                element_path=self._get_element_path(elem),
-                start_line=0,
-                end_line=0,
-                parent_context=None,
                 metadata={
                     "content_type": "code",
                     "language": elem.get("language", "unknown"),
                     "part": chunk_num + 1,
                 },
-                token_estimate=current_size,
+                token_count=current_size,
+                chunk_type="code",
+                element_path=self._get_element_path(elem),
+                start_line=0,
+                end_line=0,
+                parent_context=None,
                 elements_included=["code"],
             )
 
@@ -718,8 +752,8 @@ class ContentAwareChunking(XMLChunkingStrategy):
         return elem.tag
 
 
-class ChunkingOrchestrator:
-    """Orchestrates the chunking process using appropriate strategies"""
+class ChunkingOrchestrator(BaseChunker):
+    """Orchestrates the chunking process using appropriate strategies and implements BaseChunker interface"""
 
     def __init__(self, max_file_size_mb: Optional[float] = None):
         """
@@ -895,6 +929,18 @@ class ChunkingOrchestrator:
                 chunk.metadata["next_chunk"] = chunks[i + 1].chunk_id
 
         return chunks
+
+    def get_supported_strategies(self) -> List[str]:
+        """
+        Return list of supported chunking strategies.
+
+        Returns:
+            List of strategy names
+
+        Note:
+            This implements the BaseChunker interface requirement.
+        """
+        return ["auto", "hierarchical", "sliding_window", "content_aware"]
 
 
 # Example usage

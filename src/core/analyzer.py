@@ -19,6 +19,8 @@ import json
 import tempfile
 import os
 
+from analysis_framework_base import BaseAnalyzer
+
 # Note: Base classes imported by handlers through registry, not used directly here
 
 if TYPE_CHECKING:
@@ -32,8 +34,8 @@ else:
 # The XMLHandler base class and core data structures remain here for imports
 
 
-class XMLDocumentAnalyzer:
-    """Main analyzer that uses specialized handlers"""
+class XMLDocumentAnalyzer(BaseAnalyzer):
+    """Main analyzer that uses specialized handlers and implements BaseAnalyzer interface"""
 
     def __init__(self, max_file_size_mb: Optional[float] = None):
         """
@@ -229,6 +231,18 @@ class XMLDocumentAnalyzer:
 
         handler_classes = get_handlers_by_category(category)
         return [handler.__name__ for handler in handler_classes]
+
+    def get_supported_formats(self) -> List[str]:
+        """
+        Return list of supported file extensions.
+
+        Returns:
+            List of XML file extensions supported by this framework
+
+        Note:
+            This implements the BaseAnalyzer interface requirement.
+        """
+        return ['.xml']
 
 
 # Example usage

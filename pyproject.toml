@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xml-analysis-framework"
-version = "1.4.4"
-description = "XML document analysis and preprocessing framework designed for AI/ML data pipelines"
+version = "2.0.0"
+description = "XML document analysis and preprocessing framework designed for AI/ML data pipelines - part of the unified analysis framework suite"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
@@ -28,6 +28,7 @@ classifiers = [
 requires-python = ">=3.8"
 dependencies = [
     "defusedxml>=0.7.1",  # For secure XML parsing
+    "analysis-framework-base>=1.0.0",  # Unified framework interfaces
 ]
 
 [project.urls]

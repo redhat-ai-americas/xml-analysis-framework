@@ -8,6 +8,22 @@
 
 A production-ready XML document analysis and preprocessing framework with **29 specialized handlers** designed for AI/ML data pipelines. Transform any XML document into structured, AI-ready data and optimized chunks with **100% success rate** across 71 diverse test files.
 
+## 🔗 Part of Analysis Framework Suite
+
+This framework is part of a unified suite of document analysis tools that share a consistent interface:
+
+- **[analysis-framework-base](https://pypi.org/project/analysis-framework-base/)** - Base interfaces and shared models
+- **[xml-analysis-framework](https://pypi.org/project/xml-analysis-framework/)** - XML document analysis (this package)
+- **[docling-analysis-framework](https://pypi.org/project/docling-analysis-framework/)** - PDF/Office documents via Docling
+- **[document-analysis-framework](https://pypi.org/project/document-analysis-framework/)** - Text, code, config files
+- **[data-analysis-framework](https://pypi.org/project/data-analysis-framework/)** - Structured data analysis
+
+All frameworks implement the same `BaseAnalyzer` and `BaseChunker` interfaces from `analysis-framework-base`, enabling:
+- **Consistent API** across document types
+- **Easy framework switching** with minimal code changes
+- **Unified result format** for downstream processing
+- **Shared tooling** and utilities
+
 ## 🚀 Quick Start
 
 ### Simple API - Get Started in Seconds

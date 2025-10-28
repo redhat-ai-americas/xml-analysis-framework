@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2025-10-27
+
+### Changed
+- **BREAKING**: Now depends on `analysis-framework-base>=1.0.0`
+- `UnifiedAnalysisResult` now inherits from base framework class
+- `XMLDocumentAnalyzer` implements `BaseAnalyzer` interface
+- `ChunkingOrchestrator` implements `BaseChunker` interface
+- `XMLChunk` extends `BaseChunkInfo` from base framework
+- Part of unified analysis framework suite
+
+### Added
+- `XMLDocumentAnalyzer.get_supported_formats()` - returns list of supported file extensions
+- `ChunkingOrchestrator.get_supported_strategies()` - returns list of chunking strategies
+- Integration with analysis-framework-base for consistent cross-framework interfaces
+
+### Backward Compatibility
+- All existing APIs remain unchanged
+- Existing code will continue to work without modifications
+- New base classes only add interface consistency, no functionality changes
+- `token_estimate` property maintained for backward compatibility (maps to `token_count`)
+
 ## [1.4.4] - 2025-01-27
 
 ### Changed
